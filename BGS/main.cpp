@@ -7,9 +7,30 @@
 //
 
 #include <iostream>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <string>
+#include "GaussianModel.h"
 
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    std::cout << "Hello, World!\n";
+    
+    //
+//    std::string testFile = "../Videos/cheetah_test.mp4";
+    
+    //Trying a test video from http://wordpress-jodoin.dmi.usherb.ca/dataset2014/
+    
+    IplImage frame = cv::imread("../Videos/sofa/in0000001.jpg");
+    
+    GaussianModel gm(&frame, 10);
+    
+    for(int i = 50; i<250; i++){
+        
+        //TODO: format this properly
+        frame = cv::imread("../Videos/sofa/in0000001.jpg");
+        gm.updateModel(frame);
+    }
+    
+    
+    std::cout << "Running Background subtraction test";
     return 0;
 }
