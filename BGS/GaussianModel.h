@@ -6,14 +6,14 @@
 //  Copyright (c) 2014 Peter Henderson. All rights reserved.
 //
 
-#ifndef __BGS__GuassianModel__
-#define __BGS__GuassianModel__
+#ifndef __BGS__GaussianModel__
+#define __BGS__GaussianModel__
 
 #include <stdio.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
-#include <stdlib>
+//#include <stdlib>
 #include <ctime>
 
 using namespace cv;

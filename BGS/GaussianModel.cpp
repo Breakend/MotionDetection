@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Peter Henderson. All rights reserved.
 //
 
-#include "GuassianModel.h"
+#include "GaussianModel.h"
 //#include <stdlib.h>
 // Here we're going to define the Gaussian model for the background of an image
 // There will be 1 gaussian model per a small N X N grid subsection of the overall image
@@ -64,13 +64,15 @@ GaussianModel::GaussianModel(IplImage* first_image, int N){
 void GaussianModel::updateModel(IplImage * next_frame){
     //TODO: learning rate alpha should be replaced here by age.
     time_t TimeStart, TimeEnd, TimeUsed;
+    cvShowImage("origin", next_frame);
+
     TimeStart = clock();
     //Guassian model
-    for(int y = 0; y < frame->height; ++y)
+    for(int y = 0; y < next_frame->height; ++y)
     {
-        for(int x = 0; x < frame->width; ++x)
+        for(int x = 0; x < next_frame->width; ++x)
         {
-            pixel = cvGet2D(frame, y, x);
+            pixel = cvGet2D(next_frame, y, x);
             pixel_u = cvGet2D(frame_u, y, x);
             pixel_std = cvGet2D(frame_std, y, x);
             pixel_var = cvGet2D(frame_var, y, x);
@@ -104,10 +106,10 @@ void GaussianModel::updateModel(IplImage * next_frame){
     /*
      Don't reall get what this is for?
      */
-    cvAbsDiff(frame_u, frame, frame_diff);
-    for( int y = 0; y < frame->height; ++y)
+    cvAbsDiff(frame_u, next_frame, frame_diff);
+    for( int y = 0; y < next_frame->height; ++y)
     {
-        for(int x = 0; x < frame->width; ++x)
+        for(int x = 0; x < next_frame->width; ++x)
         {
             if ((frame_diff->imageData + y * frame_diff->widthStep)[3 * x] > 20 &&
                  (frame_diff->imageData + y * frame_diff->widthStep)[3 * x + 1] > 20 &&
@@ -122,7 +124,6 @@ void GaussianModel::updateModel(IplImage * next_frame){
     TimeUsed = TimeEnd-TimeStart;
     std::cout<<"Time To Process Frame: " << TimeUsed << std::endl; 
     
-    cvShowImage("origin", frame);
     cvShowImage("processing", frame_u);
     cvShowImage("result", frame_bin);
 }
