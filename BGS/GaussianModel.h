@@ -33,6 +33,29 @@ public:
     GaussianModel(IplImage* first_image, int N);
     ~GaussianModel();
     void updateModel(IplImage * next_frame);
+    void updatePixel(IplImage * next_frame, int y, int x, int alpha);
+    void updateBinary(IplImage * next_frame);
+    void setPixel(IplImage *frame, int y, int x);
+    
+    /*
+     Frames
+     TODO: make these private with setters/getters
+     */
+    //original images of video
+    IplImage* frame = NULL;
+    //expected images of video
+    IplImage* frame_u = NULL;
+    //variance images
+    IplImage* frame_var = NULL;
+    //deviation images
+    IplImage* frame_std = NULL;
+    //binary images
+    IplImage* frame_bin = NULL;
+    //difference images
+    IplImage* frame_diff = NULL;
+    
+    double age;
+    int **ages;
 
 private:
     /*
@@ -50,22 +73,6 @@ private:
     CvScalar pixel_back = {0};
     
     /*
-     Frames
-     */
-    //original images of video
-    IplImage* frame = NULL;
-    //expected images of video
-    IplImage* frame_u = NULL;
-    //variance images
-    IplImage* frame_var = NULL;
-    //deviation images
-    IplImage* frame_std = NULL;
-    //binary images
-    IplImage* frame_bin = NULL;
-    //difference images
-    IplImage* frame_diff = NULL;
-    
-    /*
      Constants
      TODO: capitalize them
      */
@@ -77,6 +84,7 @@ private:
     const int numMRF = 4;
     const int num_write = 500;
     const double threshold = 0.65;
+    const double theta_d = 8;
     
     /*
      Other params

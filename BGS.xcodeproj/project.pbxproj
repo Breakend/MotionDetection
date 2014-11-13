@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C066B7CC1A06EA0D003471F2 /* GaussianModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C066B7CB1A06EA0D003471F2 /* GaussianModel.cpp */; };
+		C0797BA81A09420A00B46F07 /* DualGaussianModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0797BA61A09420A00B46F07 /* DualGaussianModel.cpp */; };
 		C0C4518D1A06ACDF00905399 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0C4518C1A06ACDF00905399 /* main.cpp */; };
 		C0C451CD1A06AEAB00905399 /* libopencv_videostab.2.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0C451941A06AEAB00905399 /* libopencv_videostab.2.4.6.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		C0C451CE1A06AEAB00905399 /* libopencv_videostab.2.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0C451951A06AEAB00905399 /* libopencv_videostab.2.4.6.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -83,6 +84,8 @@
 /* Begin PBXFileReference section */
 		C066B7CA1A06EA0D003471F2 /* GaussianModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GaussianModel.h; sourceTree = "<group>"; };
 		C066B7CB1A06EA0D003471F2 /* GaussianModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GaussianModel.cpp; sourceTree = "<group>"; };
+		C0797BA61A09420A00B46F07 /* DualGaussianModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DualGaussianModel.cpp; sourceTree = "<group>"; };
+		C0797BA71A09420A00B46F07 /* DualGaussianModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DualGaussianModel.h; sourceTree = "<group>"; };
 		C0C451891A06ACDF00905399 /* BGS */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = BGS; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0C4518C1A06ACDF00905399 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		C0C451941A06AEAB00905399 /* libopencv_videostab.2.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libopencv_videostab.2.4.6.dylib; sourceTree = "<group>"; };
@@ -235,6 +238,8 @@
 				C066B7CA1A06EA0D003471F2 /* GaussianModel.h */,
 				C066B7CB1A06EA0D003471F2 /* GaussianModel.cpp */,
 				C0C4518C1A06ACDF00905399 /* main.cpp */,
+				C0797BA61A09420A00B46F07 /* DualGaussianModel.cpp */,
+				C0797BA71A09420A00B46F07 /* DualGaussianModel.h */,
 			);
 			path = BGS;
 			sourceTree = "<group>";
@@ -361,6 +366,7 @@
 			files = (
 				C066B7CC1A06EA0D003471F2 /* GaussianModel.cpp in Sources */,
 				C0C4518D1A06ACDF00905399 /* main.cpp in Sources */,
+				C0797BA81A09420A00B46F07 /* DualGaussianModel.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
