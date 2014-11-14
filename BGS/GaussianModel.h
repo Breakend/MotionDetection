@@ -27,32 +27,32 @@ class GaussianModel{
 public:
     /*!
      Generates a new guassian model which can be updated with values
-     \param first_image the first frame
+     \param first_image the first frame 
      \param N the size of the
      */
-    GaussianModel(IplImage* first_image, int N);
+    GaussianModel(Mat* first_image, int N);
+    void init(Mat * next_frame);
     ~GaussianModel();
-    void updateModel(IplImage * next_frame);
-    void updatePixel(IplImage * next_frame, int y, int x, int alpha);
-    void updateBinary(IplImage * next_frame);
-    void setPixel(IplImage *frame, int y, int x);
+
+    void updatePixel(Mat * next_frame, int y, int x);
+    void updateBinary(Mat * next_frame);
+    void setPixel(Mat *frame, int y, int x);
     
-    /*
-     Frames
-     TODO: make these private with setters/getters
+    /**
+     For greyscale
      */
     //original images of video
-    IplImage* frame = NULL;
+    Mat* frame_mat = NULL;
     //expected images of video
-    IplImage* frame_u = NULL;
+    Mat* frame_u_mat = NULL;
     //variance images
-    IplImage* frame_var = NULL;
+    Mat* frame_var_mat = NULL;
     //deviation images
-    IplImage* frame_std = NULL;
+//    Mat* frame_std_mat = NULL;
     //binary images
-    IplImage* frame_bin = NULL;
-    //difference images
-    IplImage* frame_diff = NULL;
+    Mat* frame_bin_mat = NULL;
+    //Mat images
+//    Mat* frame_diff_mat = NULL;
     
     double age;
     int **ages;
@@ -62,29 +62,22 @@ private:
      Pixel scalars for calculations
      */
     //original values of pixels
-    CvScalar pixel = {0};
+    cv::Scalar pixel = {0};
     //expected values of pixels
-    CvScalar pixel_u = {0};
+    cv::Scalar pixel_u = {0};
     //variance images
-    CvScalar pixel_var = {0};
+    cv::Scalar pixel_var = {0};
     //standard deviation images
-    CvScalar pixel_std = {0};
-    CvScalar pixel_for = {255, 0, 0,0};
-    CvScalar pixel_back = {0};
+//    cv::Scalar pixel_std = {0};
+//    cv::Scalar pixel_for = {255,0,0,0};
+//    cv::Scalar pixel_back = {0};
     
     /*
      Constants
      TODO: capitalize them
      */
-    const double e = 2.7183;
-    const double segama = 30; //is this supposed to be sigma?
-    const double pi = 3.14;
-    const int numFrame = 10;
-    const int numInitial = 1;
-    const int numMRF = 4;
-    const int num_write = 500;
-    const double threshold = 0.65;
-    const double theta_d = 8;
+
+    const double theta_d = 15.0;
     
     /*
      Other params

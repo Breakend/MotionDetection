@@ -20,9 +20,10 @@ int main(int argc, const char * argv[]) {
     
     //Trying a test video from http://wordpress-jodoin.dmi.usherb.ca/dataset2014/
     //TODO: less hardcoding more configurables.
-    int start = 70;
+    int start = 01;
     int end = 500;
-    IplImage *frame = cvLoadImage("/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in000050.jpg");
+//    IplImage *frame = cvLoadImage("/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in000050.jpg");
+    Mat frame = imread("/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
 //    CvCapture* capture = cvCaptureFromCAM( CV_CAP_ANY );
 //    
 //    if ( !capture ) {
@@ -39,7 +40,7 @@ int main(int argc, const char * argv[]) {
 ////        return -1;
 //    }
 
-    DualGaussianModel gm(frame, 10);
+    DualGaussianModel gm(&frame, 10);
     char buff[100];
 
     for(int i = start+1; i<end; i++){
@@ -48,11 +49,13 @@ int main(int argc, const char * argv[]) {
         sprintf(buff, "/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in%06d.jpg", i);
         std::string buffAsStdStr = buff;
         const char * c = buffAsStdStr.c_str();
-        IplImage* tempframe = cvLoadImage(c);
+        frame = imread(c,  CV_LOAD_IMAGE_GRAYSCALE);
+
+//        IplImage* tempframe = cvLoadImage(c);
 //        cvShowImage("origin", tempframe);
         cvWaitKey(1);
 //        cvWaitKey(0);
-        gm.updateModel(tempframe);
+        gm.updateModel(&frame);
 //        getchar();
     }
     

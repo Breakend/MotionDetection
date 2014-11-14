@@ -15,17 +15,19 @@
 //TODO: memory cleanup in destructor
 class DualGaussianModel{
 public:
-    DualGaussianModel(IplImage* first_image, int N);
     ~DualGaussianModel();
-    void updateModel(IplImage * next_frame);
+
     
+    DualGaussianModel(Mat* first_image, int N);
+    void updateModel(Mat* next_frame);
     
-    int meanThreshold = 8; //This constant was taken from the paper, but could probably be varied
+    float meanThreshold = .5; //This constant was taken from the paper, but could probably be varied
 
 private:
     //TODO: change these to auto_ptr or something
     GaussianModel* candidateBackgroundModel;
-    void swapPixels(int y, int x);
+    void swapPixelsMat(int y, int x);
+
     GaussianModel* apparentBackgroundModel;
 
 };
