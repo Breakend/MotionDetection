@@ -21,11 +21,8 @@ GaussianModel::GaussianModel(Mat* first_image, int N){
     frame_mat = first_image;
     frame_u_mat = new cv::Mat(first_image->size(), CV_8U);
     frame_var_mat = new cv::Mat(first_image->size(), CV_8U);
-//    frame_std_mat = new cv::Mat(first_image->size(), CV_8U);
-//    frame_diff_mat = new cv::Mat(first_image->size(), CV_8U);
     frame_bin_mat = new cv::Mat(first_image->size(), CV_8U);
     
-    age = 1;
     ages = (int **) std::calloc(frame_mat->cols, sizeof(int *));
     
     for(int i = 0; i< frame_mat->cols; ++i) {
@@ -81,9 +78,9 @@ void GaussianModel::updatePixel(Mat * next_frame, int y, int x){
     
     int i = 0;
     alpha = 1.0/(double)ages[x][y];
-//    alpha = .07;
     pixel_u.val[i] = (1.0-alpha) * pixel_u.val[i] + (alpha) * pixel.val[i];
-    pixel_var.val[i] = (1.0-alpha) * pixel_var.val[i] + (alpha) * pow((pixel_u.val[i] - pixel.val[i]),2);
+    float V =  pow((pixel_u.val[i] - pixel.val[i]),2);
+    pixel_var.val[i] = (1.0-alpha) * pixel_var.val[i] + (alpha) * V;
     
     //write into matrix
     frame_u_mat->at<uchar>(y, x) = pixel_u.val[i];

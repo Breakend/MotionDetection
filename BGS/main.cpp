@@ -9,6 +9,7 @@
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <string>
 #include <stdlib.h>
 #include "DualGaussianModel.h"
@@ -24,39 +25,23 @@ int main(int argc, const char * argv[]) {
     int end = 500;
 //    IplImage *frame = cvLoadImage("/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in000050.jpg");
     Mat frame = imread("/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
-//    CvCapture* capture = cvCaptureFromCAM( CV_CAP_ANY );
-//    
-//    if ( !capture ) {
-//        fprintf( stderr, "ERROR: capture is NULL \n" );
-//        getchar();
-//        return -1;
-//    }
-    
-//    IplImage* frame = cvQueryFrame(capture);
-//    int i = 0;
-//    while(!frame && i++<500){
-//        fprintf( stderr, "ERROR: frame is NULL \n" );
-////        getchar();
-////        return -1;
-//    }
+
 
     DualGaussianModel gm(&frame, 10);
     char buff[100];
 
     for(int i = start+1; i<end; i++){
-//        frame = cvQueryFrame(capture);
 
         sprintf(buff, "/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in%06d.jpg", i);
         std::string buffAsStdStr = buff;
         const char * c = buffAsStdStr.c_str();
         frame = imread(c,  CV_LOAD_IMAGE_GRAYSCALE);
-
-//        IplImage* tempframe = cvLoadImage(c);
-//        cvShowImage("origin", tempframe);
+        Mat destination;
+        GaussianBlur( frame, destination, Size(9,9), 0, 0 );
+        Mat dst;
+        medianBlur ( destination, dst, 3 );
         cvWaitKey(1);
-//        cvWaitKey(0);
-        gm.updateModel(&frame);
-//        getchar();
+        gm.updateModel(&dst);
     }
     
 //    getchar();

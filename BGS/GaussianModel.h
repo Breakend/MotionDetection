@@ -47,14 +47,8 @@ public:
     Mat* frame_u_mat = NULL;
     //variance images
     Mat* frame_var_mat = NULL;
-    //deviation images
-//    Mat* frame_std_mat = NULL;
-    //binary images
+    //the binary output of foreground vs background detection
     Mat* frame_bin_mat = NULL;
-    //Mat images
-//    Mat* frame_diff_mat = NULL;
-    
-    double age;
     int **ages;
 
 private:
@@ -68,14 +62,6 @@ private:
     //variance images
     cv::Scalar pixel_var = {0};
     //standard deviation images
-//    cv::Scalar pixel_std = {0};
-//    cv::Scalar pixel_for = {255,0,0,0};
-//    cv::Scalar pixel_back = {0};
-    
-    /*
-     Constants
-     TODO: capitalize them
-     */
 
     const double theta_d = 15.0;
     
