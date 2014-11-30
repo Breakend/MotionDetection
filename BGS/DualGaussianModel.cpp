@@ -49,19 +49,19 @@ void DualGaussianModel::updateModel(Mat *next_frame){
                 candidateBackgroundModel->updatePixel(next_frame, y, x);
             }
             else{
-//                candidateBackgroundModel->ages[x][y] = 1;
+                candidateBackgroundModel->ages[x][y] = 1;
                 candidateBackgroundModel->setPixel(next_frame, y, x);
             }
         
             if (candidateBackgroundModel->ages[x][y] > apparentBackgroundModel->ages[x][y] ){
                 //Swap the models
                 swapPixelsMat(y,x);
-//                float temp =apparentBackgroundModel->ages[x][y];
+                float temp =apparentBackgroundModel->ages[x][y];
                 apparentBackgroundModel->ages[x][y] = candidateBackgroundModel->ages[x][y];
-//                candidateBackgroundModel->ages[x][y] = temp;
+                candidateBackgroundModel->ages[x][y] = temp;
 
                 candidateBackgroundModel->setPixel(next_frame, y, x);
-//                candidateBackgroundModel->ages[x][y] = 1;
+                candidateBackgroundModel->ages[x][y] = 1;
             }
             
             

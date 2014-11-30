@@ -21,7 +21,7 @@ public:
     DualGaussianModel(Mat* first_image, int N);
     void updateModel(Mat* next_frame);
     
-    float meanThreshold = 10; //This constant was taken from the paper, but could probably be varied
+    float meanThreshold = 9.0; //This constant was taken from the paper, but could probably be varied
 
 private:
     //TODO: change these to auto_ptr or something

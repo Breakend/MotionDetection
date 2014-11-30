@@ -35,7 +35,7 @@ GaussianModel::GaussianModel(Mat* first_image, int N){
         }
     }
     
-    alpha = 0.05;
+    alpha = 0.1;
     // initial std?
     std_init = 20.0;
     //initialized var
@@ -80,7 +80,7 @@ void GaussianModel::updatePixel(Mat * next_frame, int y, int x){
     alpha = 1.0/(double)ages[x][y];
     pixel_u.val[i] = (1.0-alpha) * pixel_u.val[i] + (alpha) * pixel.val[i];
     float V =  pow((pixel_u.val[i] - pixel.val[i]),2);
-    pixel_var.val[i] = (1.0-alpha) * pixel_var.val[i] + (alpha) * V;
+    pixel_var.val[i] = (1.0-alpha) * pixel_var.val[i] + alpha*V;
     
     //write into matrix
     frame_u_mat->at<uchar>(y, x) = pixel_u.val[i];
@@ -97,7 +97,8 @@ void GaussianModel::updateBinary(Mat * next_frame){
             cv::Scalar  pixel_diff = frame_u_mat->at<uchar>(y, x) - next_frame->at<uchar>(y, x);
             cv::Scalar pixel_var = frame_var_mat->at<uchar>(y, x);
 
-            if(pow(pixel_diff.val[0], 2) <= theta_d * pixel_var.val[0]){
+            //this should be related to theta_d and variance theta_d * pixel_var.val[0]
+            if(pow(pixel_diff.val[0], 2) <= 60){
                 //background
                 frame_bin_mat->at<uchar>(y, x) = 0;
             }
