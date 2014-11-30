@@ -10,6 +10,7 @@
 #define __BGS__DualGaussianModel__
 
 #include <stdio.h>
+//#include <opencv2/video/tracking.hpp>
 #include "GaussianModel.h"
 
 //TODO: memory cleanup in destructor
@@ -22,6 +23,8 @@ public:
     void updateModel(Mat* next_frame);
     
     float meanThreshold = 9.0; //This constant was taken from the paper, but could probably be varied
+
+    //cv::Mat *last_frame;
 
 private:
     //TODO: change these to auto_ptr or something

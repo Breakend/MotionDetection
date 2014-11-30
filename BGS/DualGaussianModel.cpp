@@ -18,6 +18,7 @@ DualGaussianModel::DualGaussianModel(Mat* first_image, int N){
     namedWindow("processing", CV_WINDOW_AUTOSIZE);
     namedWindow("result", CV_WINDOW_AUTOSIZE);
     
+    //last_frame = cvCloneMat(first_image);
 }
 
 void DualGaussianModel::swapPixelsMat(int y, int x){
@@ -33,6 +34,24 @@ void DualGaussianModel::swapPixelsMat(int y, int x){
 }
 
 void DualGaussianModel::updateModel(Mat *next_frame){
+
+    // 2.3. Motion Compensation by Mixing Models    
+    // 1. Divide into grids 32 × 24, KLT on every corner of the grid
+    // 2. RANSAC to obtain a homography matrix Ht:t−1 
+    // 3. 
+
+
+    // cv::Mat m_prevImg;
+    // cv::Mat m_nextImg;
+    //std::vector<cv::Point2f>   m_prevPts;
+    //std::vector<cv::Point2f>   m_nextPts;
+    //std::vector<unsigned char> m_status;
+    //std::vector<float>         m_error;
+    //cv::calcOpticalFlowPyrLK(last_frame, next_frame, m_prevPts, m_nextPts, m_status, m_error);
+
+    //last_frame = cvCloneMat(next_frame);
+
+
     for(int y = 0; y < next_frame->rows; ++y)
     {
         for(int x = 0; x < next_frame->cols; ++x)

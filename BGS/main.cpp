@@ -31,7 +31,6 @@ int main(int argc, const char * argv[]) {
 
     Mat frame = imread("./Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
 
-
     DualGaussianModel gm(&frame, 10);
     char buff[100];
 
