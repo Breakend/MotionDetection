@@ -24,7 +24,12 @@ int main(int argc, const char * argv[]) {
     int start = 01;
     int end = 500;
 //    IplImage *frame = cvLoadImage("/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in000050.jpg");
-    Mat frame = imread("/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
+
+    // /Users/Breakend/Documents/code/BGS/Videos/
+
+    // /Users/Breakend/Documents/code/BGS/
+
+    Mat frame = imread("./Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
 
 
     DualGaussianModel gm(&frame, 10);
@@ -32,7 +37,7 @@ int main(int argc, const char * argv[]) {
 
     for(int i = start+1; i<end; i++){
 
-        sprintf(buff, "/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in%06d.jpg", i);
+        sprintf(buff, "./Videos/sofa/input/in%06d.jpg", i);
         std::string buffAsStdStr = buff;
         const char * c = buffAsStdStr.c_str();
         frame = imread(c,  CV_LOAD_IMAGE_GRAYSCALE);

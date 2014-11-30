@@ -1,2 +1,5 @@
 Videos/
 BGS.xcodeproj/xcuserdata/
+BGS/*.o
+BGS/*.gch
+*.dylib
