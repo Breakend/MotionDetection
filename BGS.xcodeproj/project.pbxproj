@@ -468,6 +468,7 @@
 					"-lopencv_core.2.4.6",
 					"-opencv_highgui.2.4.6",
 					"-lm",
+					"-lopencv_calib3d.2.4.6",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -490,6 +491,7 @@
 					"-lopencv_core.2.4.6",
 					"-opencv_highgui.2.4.6",
 					"-lm",
+					"-lopencv_calib3d.2.4.6",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

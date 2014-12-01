@@ -63,7 +63,7 @@ private:
     cv::Scalar pixel_var = {0};
     //standard deviation images
 
-    const double theta_d = 20.0;
+    const double theta_d = 360.0;
     
     /*
      Other params

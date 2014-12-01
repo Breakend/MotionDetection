@@ -66,7 +66,7 @@
 ////    }
 ////    else if(strcmp(argv[1], "-img") == 0) {
 ////        //input data coming from a sequence of images
-//        processImages("/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in000001.jpg");
+//        processImages("/Users/Breakend/Documents/code/BGS/Videos/badminton/input/in000001.jpg");
 ////    }
 ////    else {
 ////        //error in reading input parameters
@@ -163,7 +163,7 @@
 ////        string nextFrameFilename = prefix + nextFrameNumberString + suffix;
 //        char buff[100];
 //
-//        sprintf(buff, "/Users/Breakend/Documents/code/BGS/Videos/sofa/input/in%06d.jpg", i);
+//        sprintf(buff, "/Users/Breakend/Documents/code/BGS/Videos/badminton/input/in%06d.jpg", i);
 //        std::string buffAsStdStr = buff;
 //        string nextFrameFilename = buffAsStdStr.c_str();
 //        //read the next frame

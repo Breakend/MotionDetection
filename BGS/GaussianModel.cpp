@@ -77,6 +77,7 @@ void GaussianModel::updatePixel(Mat * next_frame, int y, int x){
     pixel_var = frame_var_mat->at<uchar>(y, x);
     
     int i = 0;
+//    alpha = .0001;
     alpha = 1.0/(double)ages[x][y];
     pixel_u.val[i] = (1.0-alpha) * pixel_u.val[i] + (alpha) * pixel.val[i];
     float V =  pow((pixel_u.val[i] - pixel.val[i]),2);
@@ -98,7 +99,7 @@ void GaussianModel::updateBinary(Mat * next_frame){
             cv::Scalar pixel_var = frame_var_mat->at<uchar>(y, x);
 
             //this should be related to theta_d and variance theta_d * pixel_var.val[0]
-            if(pow(pixel_diff.val[0], 2) <= 60){
+            if(pow(pixel_diff.val[0], 2) <= 500){
                 //background
                 frame_bin_mat->at<uchar>(y, x) = 0;
             }

@@ -13,10 +13,12 @@
 DualGaussianModel::DualGaussianModel(Mat* first_image, int N){
     candidateBackgroundModel = new GaussianModel(first_image, N);
     apparentBackgroundModel = new GaussianModel(first_image, N);
+    prevFrame = first_image;
     //set up windows
     namedWindow("origin", CV_WINDOW_AUTOSIZE);
     namedWindow("processing", CV_WINDOW_AUTOSIZE);
     namedWindow("result", CV_WINDOW_AUTOSIZE);
+    namedWindow("homography", CV_WINDOW_AUTOSIZE);
     
     //last_frame = cvCloneMat(first_image);
 }
@@ -40,24 +42,73 @@ void DualGaussianModel::updateModel(Mat *next_frame){
     // 2. RANSAC to obtain a homography matrix Ht:t−1 
     // 3. 
 
-    /*
-    cv::Mat m_prevImg;
-    cv::Mat m_nextImg;
+    
+    cv::Mat m_prevImg = prevFrame->clone();
+    cv::Mat m_nextImg= next_frame->clone();
+
+    cv::Mat m_outImg;
     std::vector<cv::Point2f>   m_prevPts;
     std::vector<cv::Point2f>   m_nextPts;
     std::vector<unsigned char> m_status;
     std::vector<float>         m_error;
-    cv::calcOpticalFlowPyrLK(m_prevImg, m_nextImg, m_prevPts, m_nextPts, m_status, m_error);
+    
+    
+    // I give up
+//    // TODO: is this really the way to do it?
+    goodFeaturesToTrack(m_prevImg, m_prevPts, 1000, 0.01, 1);
+    if(m_prevPts.size() >= 1) {
+        cv::calcOpticalFlowPyrLK(m_prevImg, m_nextImg, m_prevPts, m_nextPts, m_status, m_error);
+     
+        //last_frame = cvCloneMat(next_frame);
 
-    //last_frame = cvCloneMat(next_frame);
+        double ransacThreshold = 3;
+        // compute homography using RANSAC
+        cv::Mat mask;
+        vector <Point2f> prev_corner2, cur_corner2;
+        
+        // weed out bad matches
+        for(size_t i=0; i < m_status.size(); i++) {
+            if(m_status[i]) {
+                prev_corner2.push_back(m_prevPts[i]);
+                cur_corner2.push_back(m_nextPts[i]);
+            }
+        }
+        
+        cv::Mat H = cv::findHomography(prev_corner2, cur_corner2, CV_RANSAC, 3, mask);
+        
+//        Mat M = estimateRigidTransform(prev_corner2,cur_corner2,0);
+//        warpAffine(m_nextImg,m_outImg,M,m_nextImg.size(),INTER_NEAREST|WARP_INVERSE_MAP);
+    
+//        perspectiveTransform( m_prevImg, m_outImg, H);
+        Mat meanCopy = apparentBackgroundModel->frame_u_mat->clone();
+        Mat varCopy = apparentBackgroundModel->frame_var_mat->clone();
+        Mat cmeanCopy = candidateBackgroundModel->frame_u_mat->clone();
+        Mat cvarCopy = candidateBackgroundModel->frame_var_mat->clone();
+        
+        warpPerspective(meanCopy, *apparentBackgroundModel->frame_u_mat,H,m_nextImg.size(), INTER_NEAREST, BORDER_CONSTANT  );
+        warpPerspective(varCopy, *apparentBackgroundModel->frame_var_mat,H,m_nextImg.size(), INTER_NEAREST, BORDER_CONSTANT  );
+        warpPerspective(meanCopy, *candidateBackgroundModel->frame_u_mat,H,m_nextImg.size(), INTER_NEAREST, BORDER_CONSTANT  );
+        warpPerspective(varCopy, *candidateBackgroundModel->frame_var_mat,H,m_nextImg.size(), INTER_NEAREST, BORDER_CONSTANT  );
+        
+//        for(int j=0; j<m_status.size(); j++){
+//            if(m_status[j]){
+//                
+//                line(m_outImg,m_prevPts[j],m_nextPts[j],CV_RGB(64, 64, 255));
+//            }
+//        }
+        // Update each mean of the apparent background model and candidate background model?
+        
+        // upd_mean.chatAt(y, x) = previous mapped mu
+        
+        // variance.charAt(y,x) = previous mapped var
+//        imshow("homography", m_outImg);
+        cvWaitKey(1);
+    }
+    else{
+        printf("NO matching points");
+    }
 
-    double ransacThreshold = 3;
-    // compute homography using RANSAC
-    cv::Mat mask;
-    cv::Mat H = cv::findHomography(m_prevPts, m_nextPts, CV_RANSAC, ransacThreshold, mask);
-    */
-
-    // set the next frame... 
+    // set the next frame...
     // next_frame
 
 
@@ -104,6 +155,7 @@ void DualGaussianModel::updateModel(Mat *next_frame){
     cvWaitKey(1);
     imshow("result", *apparentBackgroundModel->frame_bin_mat);
     cvWaitKey(1);
+    prevFrame = next_frame;
 }
 
 DualGaussianModel::~DualGaussianModel(){
@@ -113,4 +165,5 @@ DualGaussianModel::~DualGaussianModel(){
     cvDestroyWindow("origin");
     cvDestroyWindow("processing");
     cvDestroyWindow("result");
+    cvDestroyWindow("homography");
 }
