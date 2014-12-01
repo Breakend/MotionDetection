@@ -14,7 +14,7 @@
 #include "GaussianModel.h"
 
 //TODO: memory cleanup in destructor
-class DualGaussianModel{
+class DualGaussianModel {
 public:
     ~DualGaussianModel();
 

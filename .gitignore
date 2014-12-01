@@ -2,6 +2,8 @@ Videos/
 BGS.xcodeproj/xcuserdata/
 BGS/*.o
 BGS/*.gch
+BGS/main
 *.dylib
-BGS/omp/*.o
-BGS/omp/*.gch
+BGS/tbb/*.o
+BGS/tbb/*.gch
+BGS/tbb/tbb_main

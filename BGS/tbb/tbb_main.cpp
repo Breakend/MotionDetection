@@ -1,43 +1,43 @@
 
+
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <string>
-#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "DualGaussianModel.h"
+#include <sys/time.h>
+
+#include "DualSGM.hpp"
+
+void test_serial();
+void test_tbb();
+double timer(void);
 
 int main(int argc, char *argv[]) 
 {
+  double start, finish;
 
-  int nthreads, tid;
+  std::cout << "Running serial DualSGM \n";
+  
+  start = timer();
+  test_serial();
+  finish = timer();
 
-  /* Fork a team of threads giving them their own copies of variables */
-  #pragma omp parallel private(nthreads, tid) 
-  {
+  printf("Done! -- Execution time : %.10e\n", finish - start);
+  
+  return 0;
+}
 
-    /* Obtain thread number */
-    tid = omp_get_thread_num();
-    printf("Hello World from thread = %d\n", tid);
-
-    /* Only master thread does this */
-    if (tid == 0) {
-      nthreads = omp_get_num_threads();
-      printf("Number of threads = %d\n", nthreads);
-    }
-
-  }  /* All threads join master thread and disband */
-
+void test_serial()
+{
   int start = 01;
   int end = 500;
   char buff[100];
 
   Mat frame = imread("../Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
-  DualGaussianModel gm(&frame, 10);
-  
-  std::cout << "Running OpenMP DualGaussianModel";
+  DualSGM dsgm(&frame, 10);
 
   for (int i = start + 1; i < end; i++) {
       sprintf(buff, "../Videos/sofa/input/in%06d.jpg", i);
@@ -49,11 +49,18 @@ int main(int argc, char *argv[])
       Mat dst;
       medianBlur ( destination, dst, 3 );
       cvWaitKey(1);
-      gm.updateModel(&dst);
+      dsgm.serialUpdateModel(&dst);
   }
-    
-  std::cout << "Done!";
-  return 0;
+}
 
+void test_tbb() 
+{
 
+}
+
+double timer(void)
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec + (((double) tv.tv_usec)/1e6);
 }

@@ -26,7 +26,7 @@ GaussianModel::GaussianModel(Mat* first_image, int N){
     ages = (int **) std::calloc(frame_mat->cols, sizeof(int *));
     
     for(int i = 0; i< frame_mat->cols; ++i) {
-        ages[i] =  (int *) std::calloc(frame_mat->rows, sizeof(int));
+        ages[i] = (int *) std::calloc(frame_mat->rows, sizeof(int));
     }
     
     for(int i = 0; i < frame_mat->cols;i++){

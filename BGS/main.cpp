@@ -29,14 +29,14 @@ int main(int argc, const char * argv[]) {
 
     // /Users/Breakend/Documents/code/BGS/
 
-    Mat frame = imread("/Users/Breakend/Documents/code/BGS/Videos/badminton/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
+    Mat frame = imread("./Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
 
     DualGaussianModel gm(&frame, 10);
     char buff[100];
 
     for(int i = start + 1; i < end; i++){
 
-        sprintf(buff, "/Users/Breakend/Documents/code/BGS/Videos/badminton/input/in%06d.jpg", i);
+        sprintf(buff, "./Videos/sofa/input/in%06d.jpg", i);
         std::string buffAsStdStr = buff;
         const char * c = buffAsStdStr.c_str();
         frame = imread(c,  CV_LOAD_IMAGE_GRAYSCALE);

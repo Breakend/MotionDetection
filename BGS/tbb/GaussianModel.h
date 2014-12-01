@@ -56,11 +56,11 @@ private:
      Pixel scalars for calculations
      */
     //original values of pixels
-    cv::Scalar pixel = {0};
+    cv::Scalar pixel = 0;
     //expected values of pixels
-    cv::Scalar pixel_u = {0};
+    cv::Scalar pixel_u = 0;
     //variance images
-    cv::Scalar pixel_var = {0};
+    cv::Scalar pixel_var = 0;
     //standard deviation images
 
     const double theta_d = 20.0;
