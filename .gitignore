@@ -3,3 +3,5 @@ BGS.xcodeproj/xcuserdata/
 BGS/*.o
 BGS/*.gch
 *.dylib
+BGS/omp/*.o
+BGS/omp/*.gch

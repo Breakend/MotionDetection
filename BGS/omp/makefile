@@ -13,4 +13,4 @@ DualGaussianModel.o: DualGaussianModel.h DualGaussianModel.cpp
 	g++-4.9 -fopenmp -std=c++11 -c DualGaussianModel.h DualGaussianModel.cpp 
 
 clean:
-	rm -rf *o *gch main
+	rm -rf *o *gch omp_main
