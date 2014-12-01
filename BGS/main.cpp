@@ -34,7 +34,7 @@ int main(int argc, const char * argv[]) {
     DualGaussianModel gm(&frame, 10);
     char buff[100];
 
-    for(int i = start+1; i<end; i++){
+    for(int i = start + 1; i < end; i++){
 
         sprintf(buff, "./Videos/sofa/input/in%06d.jpg", i);
         std::string buffAsStdStr = buff;

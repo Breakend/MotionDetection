@@ -40,16 +40,25 @@ void DualGaussianModel::updateModel(Mat *next_frame){
     // 2. RANSAC to obtain a homography matrix Ht:t−1 
     // 3. 
 
-
-    // cv::Mat m_prevImg;
-    // cv::Mat m_nextImg;
-    //std::vector<cv::Point2f>   m_prevPts;
-    //std::vector<cv::Point2f>   m_nextPts;
-    //std::vector<unsigned char> m_status;
-    //std::vector<float>         m_error;
-    //cv::calcOpticalFlowPyrLK(last_frame, next_frame, m_prevPts, m_nextPts, m_status, m_error);
+    /*
+    cv::Mat m_prevImg;
+    cv::Mat m_nextImg;
+    std::vector<cv::Point2f>   m_prevPts;
+    std::vector<cv::Point2f>   m_nextPts;
+    std::vector<unsigned char> m_status;
+    std::vector<float>         m_error;
+    cv::calcOpticalFlowPyrLK(m_prevImg, m_nextImg, m_prevPts, m_nextPts, m_status, m_error);
 
     //last_frame = cvCloneMat(next_frame);
+
+    double ransacThreshold = 3;
+    // compute homography using RANSAC
+    cv::Mat mask;
+    cv::Mat H = cv::findHomography(m_prevPts, m_nextPts, CV_RANSAC, ransacThreshold, mask);
+    */
+
+    // set the next frame... 
+    // next_frame
 
 
     for(int y = 0; y < next_frame->rows; ++y)
