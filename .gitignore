@@ -1,5 +1,6 @@
 Videos/
 BGS.xcodeproj/xcuserdata/
+BGS.xcodeproj/project.xcworkspace/xcshareddata/
 BGS/*.o
 BGS/*.gch
 BGS/main
