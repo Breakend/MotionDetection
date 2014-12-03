@@ -53,21 +53,51 @@ void rgba_to_greyscale(unsigned char * const d_frame,
 
     float alpha, V;
     int adiff;
+    int cdiff;
 
-    const char pixel = d_frame[index];
-    const char ameanpixel = d_amean[index];
-    const char avarpixel = d_avar[index];
+    float pixel = d_frame[index];
+    float ameanpixel = d_amean[index];
+    float avarpixel = d_avar[index];
+    float cmeanpixel = d_cmean[index];
+    float cvarpixel = d_cvar[index];
+
     adiff = pixel - ameanpixel;
+    cdiff = pixel - cmeanpixel;
     if(adiff*adiff < 9 * avarpixel){
-        alpha = 1.0 / (float)d_aage[index];
-        d_amean[index] = (1.0-alpha) * ameanpixel + (alpha) * pixel;
+        alpha = 1.0f / (float)d_aage[index];
+        d_amean[index] = (1.0f-alpha) * ameanpixel + (alpha) * pixel;
         adiff = d_amean[index] - pixel;
         V = adiff*adiff;
-        d_avar[index] = (1.0-alpha) * avarpixel + alpha * V;
+        d_avar[index] = (1.0f-alpha) * avarpixel + alpha * V;
         d_aage[index]++;
     }
+    else if(cdiff*cdiff < 9 * cvarpixel){
+        alpha = 1.0f / (float)d_cage[index];
+        d_cmean[index] = (1.0f-alpha) * cmeanpixel + (alpha) * pixel;
+        cdiff = d_cmean[index] - pixel;
+        V = cdiff*cdiff;
+        d_cvar[index] = (1.0f-alpha) * cvarpixel + alpha * V;
+        d_cage[index]++;
+    }
+    else{      
+        d_cmean[index] = pixel;
+        d_cvar[index] = 255;
+        d_cage[index] = 1;
+    }
 
-    adiff = pixel - ameanpixel;
+    if(d_cage[index] > d_aage[index]){
+      //swap the candidate to the absolute
+      d_amean[index] = d_cmean[index];
+      d_avar[index] = d_cvar[index];
+      d_aage[index] = d_cage[index];
+
+      //reset the candidate model
+      d_cmean[index] = pixel;
+      d_cvar[index] = 255;
+      d_cage[index] = 1;
+    }
+
+    adiff = pixel - d_amean[index];
 
     //this should be related to theta_d and variance theta_d * pixel_var.val[0]
     if (adiff*adiff <= 60) {
@@ -92,8 +122,9 @@ void your_rgba_to_greyscale(unsigned char * const d_frame,
 {
   //You must fill in the correct sizes for the blockSize and gridSize
   //currently only one block with one thread is being launched
-  const dim3 blockSize(22, 22, 1);
-  const dim3 gridSize(numRows / 22 + 1, numCols / 22 + 1, 1); 
+  int THREAD_SIZE = 1;
+  const dim3 blockSize(THREAD_SIZE, THREAD_SIZE, 1);
+  const dim3 gridSize(numRows / THREAD_SIZE + 1, numCols / THREAD_SIZE + 1, 1); 
   rgba_to_greyscale<<<gridSize, blockSize>>>(d_frame, d_amean, d_cmean, 
                                               d_avar, d_cvar, d_bin, d_aage, d_cage,
                                                 numRows, numCols);

@@ -393,6 +393,8 @@ opencv2/highgui/highgui.hpp
 -
 opencv2/opencv.hpp
 -
+sys/time.h
+-
 HW1.cpp
 /Users/Breakend/Documents/code/BGS/CUDA_IMPL/HW1/HW1.cpp
 
