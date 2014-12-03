@@ -10,6 +10,7 @@
 
 #include "DualSGM.hpp"
 
+void test_timing_tbb(int num_threads);
 void test_ser_vs_par(int num_threads);
 void test_serial();
 void test_tbb(int num_threads);
@@ -19,12 +20,49 @@ int main(int argc, char *argv[])
 {
   int num_threads = atoi(argv[1]);
 
-  //double start, finish;
-  //double ser_time, par_time, t_exec; 
-
+  //test_tbb(num_threads); 
+  //test_timing_tbb(num_threads);
   test_ser_vs_par(num_threads);
 
   return 0;
+}
+
+void test_timing_tbb(int num_threads)
+{
+  double t_start, t_finish;
+  double t_exec, t_ser, t_par; 
+
+  t_start = timer();
+
+  int start = 01;
+  int end = 500;
+  char buff[100];
+
+  Mat frame = imread("../Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
+  DualSGM dsgm(&frame, 10);
+  dsgm.NUM_THREADS = num_threads;
+
+  for (int i = start + 1; i < end; i++) {
+      sprintf(buff, "../Videos/sofa/input/in%06d.jpg", i);
+      std::string buffAsStdStr = buff;
+      const char * c = buffAsStdStr.c_str();
+      frame = imread(c, CV_LOAD_IMAGE_GRAYSCALE);
+      Mat destination;
+      GaussianBlur(frame, destination, Size(9,9), 0, 0);
+      Mat dst;
+      medianBlur (destination, dst, 3);
+      cvWaitKey(1);
+      dsgm.tbbUpdateModel(&dst);
+  }
+
+  t_finish = timer();
+
+  t_par = dsgm.parallel_time;
+  t_exec = t_finish - t_start;
+  t_ser = t_exec - t_par;
+
+  printf("%i %f %f %f\n",num_threads, t_exec, t_ser, t_par);
+
 }
 
 void test_ser_vs_par(int num_threads)

@@ -1,7 +1,7 @@
 
 #include "DualSGM.hpp"
 
-#define SHOW_IMAGES 1
+#define SHOW_IMAGES 0
 
 DualSGM::DualSGM(Mat* first_image, int N) {
     parallel_time = 0;

@@ -9,11 +9,11 @@ make
 ./tbb_main 2
 ./tbb_main 4
 ./tbb_main 8
-#./tbb_main 16
-#./tbb_main 32
-#./tbb_main 64
-#./tbb_main 128
-#./tbb_main 256
+./tbb_main 16
+./tbb_main 32
+./tbb_main 64
+./tbb_main 128
+./tbb_main 256
 
 # cd ./p2p-cons && make && cd ..
 # cd ./p2p-cycl && make && cd ..
