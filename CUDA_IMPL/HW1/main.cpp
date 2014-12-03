@@ -73,6 +73,13 @@ cv::Mat readImage(const std::string &filename){
 }
 
 void test_cuda(){
+
+  /*
+  * 
+  */
+  cv::namedWindow("origin", CV_WINDOW_AUTOSIZE);
+
+
   /*
   * Absolute background
   */ 
@@ -102,30 +109,50 @@ void test_cuda(){
 
   unsigned char *d_frame, *d_bin, *d_amean, *d_avar, *d_cmean, *d_cvar;
   int *d_cage, *d_aage;
+  char buff[100];
 
-  int i = 0;
-  std::string input_file = "../Videos/sofa/input/in000001.jpg";
-  std::string output_file;
-  std::string reference_file;
-  double perPixelError = 0.0;
-  double globalError   = 0.0;
-  bool useEpsCheck = false;
+  int i = 2;
+  std::string input_file = "../../Videos/sofa/input/in000001.jpg";
 
   frame = readImage(input_file);
+  if(!frame.isContinuous()){
+    printf("Frame not continuous");
+    exit(1);
+  }
 
   /*
   * Initialize the arrays
   */
   cv::Mat am, av, cm, can_v, b;
-  am.create(frame.rows, frame.cols, CV_8UC1);
+  am = frame.clone();
+  if(!am.isContinuous()){
+    printf("am not continuous");
+    exit(1);
+  }
   a_mean  = am.ptr<unsigned char>(0);
   av.create(frame.rows, frame.cols, CV_8UC1);
+  if(!av.isContinuous()){
+    printf("am not continuous");
+    exit(1);
+  }
   a_variance  = av.ptr<unsigned char>(0);
-  cm.create(frame.rows, frame.cols, CV_8UC1);
+  cm = frame.clone();
+  if(!cm.isContinuous()){
+    printf("am not continuous");
+    exit(1);
+  }
   c_mean  = cm.ptr<unsigned char>(0);
   can_v.create(frame.rows, frame.cols, CV_8UC1);
+  if(!can_v.isContinuous()){
+    printf("am not continuous");
+    exit(1);
+  }
   c_variance  = can_v.ptr<unsigned char>(0);
   b.create(frame.rows, frame.cols, CV_8UC1);
+  if(!b.isContinuous()){
+    printf("am not continuous");
+    exit(1);
+  }
   binary  = b.ptr<unsigned char>(0);
 
   a_age = (int **) std::calloc(frame.cols, sizeof(int *));
@@ -140,10 +167,14 @@ void test_cuda(){
       for (int j = 0; j< frame.rows; j++) {
           a_age[i][j] = 1;
           c_age[i][j] = 1;
+          // c_variance[i*frame.cols + j] = 20;
+          // a_variance[i*frame.cols + j] = 20;
+          // a_mean[i*frame.cols + j] = frame.at<uchar>(i,j);
+          // c_mean[i*frame.cols + j] = frame.at<uchar>(i,j);
       }
   }
 
-  // while(i < 500){
+  while(i < 500){
 
   //load the image and give us our input and output pointers
   preProcess(&frame, &binary, &a_mean,  &a_variance, a_age, &c_mean, &c_variance, c_age, &d_frame, 
@@ -167,7 +198,14 @@ void test_cuda(){
     }
 
     size_t numPixels = numRows()*numCols();
-    // checkCudaErrors(cudaMemcpy(h_greyImage, d_greyImage, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(a_mean, d_amean, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(a_variance, d_avar, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(binary, d_bin, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
+
+    cv::Mat temp = cv::Mat(numRows(), numCols(), CV_8UC1, binary);
+    cv::imshow("origin", temp);
+    cvWaitKey(1);
+
 
     // //check results and output the grey image
     // postProcess(output_file, h_greyImage);
@@ -181,7 +219,13 @@ void test_cuda(){
                   // globalError);
 
     cleanup();
-  // }
+
+    sprintf(buff, "../../Videos/sofa/input/in%06d.jpg", i++);
+    std::string buffAsStdStr = buff;
+    const char * c = buffAsStdStr.c_str();
+    frame = readImage(c);
+  }
   //END LOOP
+  cvDestroyWindow("origin");
 
 }

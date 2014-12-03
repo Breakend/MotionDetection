@@ -44,15 +44,39 @@ void rgba_to_greyscale(unsigned char * const d_frame,
                             int * const d_cage,
                        int numRows, int numCols)
 {
-   const size_t r = blockIdx.x * blockDim.x + threadIdx.x;
-const size_t c = blockIdx.y * blockDim.y + threadIdx.y;
-const size_t index = r * numCols + c;
-   //Mem leak check
+  const size_t r = blockIdx.x * blockDim.x + threadIdx.x;
+  const size_t c = blockIdx.y * blockDim.y + threadIdx.y;
+  const size_t index = r * numCols + c;
+
   if (index < numRows * numCols)
   {
+
+    float alpha, V;
+    int adiff;
+
     const char pixel = d_frame[index];
-    d_amean[index] = (pixel + 1);
-    d_aage[index]++;
+    const char ameanpixel = d_amean[index];
+    const char avarpixel = d_avar[index];
+    adiff = pixel - ameanpixel;
+    if(adiff*adiff < 9 * avarpixel){
+        alpha = 1.0 / (float)d_aage[index];
+        d_amean[index] = (1.0-alpha) * ameanpixel + (alpha) * pixel;
+        adiff = d_amean[index] - pixel;
+        V = adiff*adiff;
+        d_avar[index] = (1.0-alpha) * avarpixel + alpha * V;
+        d_aage[index]++;
+    }
+
+    adiff = pixel - ameanpixel;
+
+    //this should be related to theta_d and variance theta_d * pixel_var.val[0]
+    if (adiff*adiff <= 60) {
+        //background
+        d_bin[index]= 0;
+    } else {
+        //foreground
+        d_bin[index] = 255;
+    }
   }
 }
 

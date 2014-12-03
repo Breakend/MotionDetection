@@ -8,3 +8,5 @@ BGS/main
 BGS/tbb/*.o
 BGS/tbb/*.gch
 BGS/tbb/tbb_main
+CUDA_IMPL/bin/*
+CUDA_IMPL/build/*
