@@ -7,35 +7,47 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
 
 #include "DualSGM.hpp"
 
+void test_ser_vs_par(int num_threads);
 void test_serial();
-void test_tbb();
+void test_tbb(int num_threads);
 double timer(void);
 
 int main(int argc, char *argv[]) 
 {
+  int num_threads = atoi(argv[1]);
+
+  //double start, finish;
+  //double ser_time, par_time, t_exec; 
+
+  test_ser_vs_par(num_threads);
+
+  return 0;
+}
+
+void test_ser_vs_par(int num_threads)
+{
   double start, finish;
   double ser_time, par_time, speedup; 
+
+  printf("NUM_THREADS = %i \n", num_threads);
 
   start = timer();
   test_serial();
   finish = timer();
   ser_time = finish - start;
-  printf("Done! -- Serial execution time : %.10e\n", ser_time);
+  printf("Done! -- Serial execution time : %.10e (%f) \n", ser_time, ser_time);
 
   start = timer();
-  test_tbb();
+  test_tbb(num_threads);
   finish = timer();
   par_time = finish - start;
-  printf("Done! -- TBB execution time : %.10e\n", par_time);
+  printf("Done! -- TBB execution time : %.10e (%f) \n", par_time, par_time);
 
   speedup = ser_time / par_time;
   printf("Speedup: %.10e\n", speedup);
-
-  return 0;
 }
 
 void test_serial()
@@ -61,9 +73,10 @@ void test_serial()
       cvWaitKey(1);
       dsgm.serialUpdateModel(&dst);
   }
+
 }
 
-void test_tbb() 
+void test_tbb(int num_threads) 
 {
   std::cout << "Running tbb DualSGM \n";
 
@@ -73,6 +86,7 @@ void test_tbb()
 
   Mat frame = imread("../Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
   DualSGM dsgm(&frame, 10);
+  dsgm.NUM_THREADS = num_threads;
 
   for (int i = start + 1; i < end; i++) {
       sprintf(buff, "../Videos/sofa/input/in%06d.jpg", i);
@@ -86,6 +100,7 @@ void test_tbb()
       cvWaitKey(1);
       dsgm.tbbUpdateModel(&dst);
   }
+  printf("Time in parallel : %.10e (%f) \n", dsgm.parallel_time, dsgm.parallel_time);
 }
 
 double timer(void)

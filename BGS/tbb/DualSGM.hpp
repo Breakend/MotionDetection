@@ -10,6 +10,7 @@
 #include <iostream>
 //#include <stdlib>
 #include <ctime>
+#include <sys/time.h>
 
 using namespace cv;
 
@@ -18,9 +19,11 @@ public:
     ~DualSGM();
     DualSGM(Mat* first_image, int N);
 
-    const static int NUM_THREADS = 4;
+    int NUM_THREADS;
     static int num_rows;
     static int num_cols;
+
+    double parallel_time;
 
     void serialUpdateModel(Mat* next_frame);
     void tbbUpdateModel(Mat *next_frame);
@@ -34,6 +37,8 @@ public:
     double var_init = std_init * std_init;
 
 private:
+    double timer(void);
+
     cv::Mat *bin_mat;
     cv::Mat *app_u_mat;
     cv::Mat *app_var_mat;

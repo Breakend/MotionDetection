@@ -1,12 +1,17 @@
 
 #include "DualSGM.hpp"
 
-DualSGM::DualSGM(Mat* first_image, int N) {
+#define SHOW_IMAGES 1
 
-    // Set up windows
-    namedWindow("origin", CV_WINDOW_AUTOSIZE);
-    namedWindow("processing", CV_WINDOW_AUTOSIZE);
-    namedWindow("result", CV_WINDOW_AUTOSIZE);
+DualSGM::DualSGM(Mat* first_image, int N) {
+    parallel_time = 0;
+
+    if (SHOW_IMAGES) {
+        // Set up windows
+        namedWindow("origin", CV_WINDOW_AUTOSIZE);
+        namedWindow("processing", CV_WINDOW_AUTOSIZE);
+        namedWindow("result", CV_WINDOW_AUTOSIZE);
+    }
 
     /* Init mem, canidate, apparent */
     bin_mat     = new cv::Mat(first_image->size(), CV_8U);
@@ -27,12 +32,12 @@ DualSGM::DualSGM(Mat* first_image, int N) {
         for (int j = 0; j< first_image->rows; j++) {
             app_ages[i][j] = 1;
             can_ages[i][j] = 1;
+            // app_var_mat->at<uchar>(i,j) = var_init; INIT VAR
         }
     }
 
     //DualSGM::num_rows = first_image->rows;
     //DualSGM::num_cols = first_image->cols;
-
 }
 
 void DualSGM::serialUpdateModel(Mat *next_frame) {
@@ -126,13 +131,15 @@ void DualSGM::serialUpdateModel(Mat *next_frame) {
         }
     }
     
-    // Show update
-    imshow("origin", *next_frame);
-    cvWaitKey(1);
-    imshow("processing", *app_u_mat);
-    cvWaitKey(1);
-    imshow("result", *bin_mat);
-    cvWaitKey(1);
+    if (SHOW_IMAGES) {
+        // Show update
+        imshow("origin", *next_frame);
+        cvWaitKey(1);
+        imshow("processing", *app_u_mat);
+        cvWaitKey(1);
+        imshow("result", *bin_mat);
+        cvWaitKey(1);
+    }  
 }
 
 class Parallel_process : public cv::ParallelLoopBody 
@@ -146,18 +153,19 @@ class Parallel_process : public cv::ParallelLoopBody
         cv::Mat *can_var_mat;
         int **app_ages;
         int **can_ages;
+        int num_threads;
 
     public:
         Parallel_process(cv::Mat *frame, cv::Mat *bmat, cv::Mat *aumat, cv::Mat *avmat, 
-            cv::Mat *cumat, cv::Mat *cvmat, int **aamat, int **camat) :
+            cv::Mat *cumat, cv::Mat *cvmat, int **aamat, int **camat, int nt) :
             next_frame(frame), bin_mat(bmat), app_u_mat(aumat), 
             app_var_mat(avmat), can_u_mat(cumat), can_var_mat(cvmat),
-            app_ages(aamat), can_ages(camat) {}
+            app_ages(aamat), can_ages(camat), num_threads(nt) {}
 
         virtual void operator()(const cv::Range& range) const
         {
             for (int rank = range.start; rank < range.end; rank++) {
-                int size = DualSGM::NUM_THREADS;
+                int size = num_threads;
                 int blocking_factor = next_frame->rows / size; 
                 int offset = blocking_factor * rank;
                 int row_limit = offset + blocking_factor; 
@@ -281,17 +289,30 @@ class Parallel_process : public cv::ParallelLoopBody
 
 void DualSGM::tbbUpdateModel(Mat *next_frame) {
 
-    cv::parallel_for_(cv::Range(0,NUM_THREADS), Parallel_process(next_frame, bin_mat, app_u_mat, 
-        app_var_mat, can_u_mat, can_var_mat, app_ages, can_ages));
+    double start_time = timer();
+    cv::parallel_for_(cv::Range(0,this->NUM_THREADS), Parallel_process(next_frame, bin_mat, app_u_mat, 
+        app_var_mat, can_u_mat, can_var_mat, app_ages, can_ages, this->NUM_THREADS));
+    double end_time = timer();
 
-    // Show update
-    imshow("origin", *next_frame);
-    cvWaitKey(1);
-    imshow("processing", *app_u_mat);
-    cvWaitKey(1);
-    imshow("result", *bin_mat);
-    cvWaitKey(1);
+    parallel_time += end_time - start_time;
 
+    if (SHOW_IMAGES) {
+        // Show update
+        imshow("origin", *next_frame);
+        cvWaitKey(1);
+        imshow("processing", *app_u_mat);
+        cvWaitKey(1);
+        imshow("result", *bin_mat);
+        cvWaitKey(1);
+    }
+
+}
+
+double DualSGM::timer(void)
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec + (((double) tv.tv_usec)/1e6);
 }
 
 
@@ -305,8 +326,11 @@ DualSGM::~DualSGM() {
     free(app_ages);
     free(can_ages);
 
-    cvDestroyWindow("origin");
-    cvDestroyWindow("processing");
-    cvDestroyWindow("result");
+    if (SHOW_IMAGES) {
+        cvDestroyWindow("origin");
+        cvDestroyWindow("processing");
+        cvDestroyWindow("result");
+    }
+
 }
 
