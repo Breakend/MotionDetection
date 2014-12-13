@@ -240,11 +240,11 @@ void test_cuda(){
   t_total_f = cpu_timer();
   t_total = t_total_f-t_total_s;
   t_serial = t_total-t_parallel;
-
-  printf("Total Execution time: %f\n", t_total);
-  printf("Serial Execution part: %f\n", t_serial);
-  printf("Parallel Execution part: %f\n", t_parallel);
-  printf("Computation time for GPU: %f\n", t_gpu);
-  printf("Communication time for GPU: %f\n", t_parallel - t_gpu);
+  printf("%f %f %f %f %f\n", t_total, t_serial, t_parallel, t_gpu, t_parallel-t_gpu);
+  // printf("Total Execution time: %f\n", t_total);
+  // printf("Serial Execution part: %f\n", t_serial);
+  // printf("Parallel Execution part: %f\n", t_parallel);
+  // printf("Computation time for GPU: %f\n", t_gpu);
+  // printf("Communication time for GPU: %f\n", t_parallel - t_gpu);
 
 }

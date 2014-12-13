@@ -32,7 +32,7 @@ private:
     //TODO: change these to auto_ptr or something
     GaussianModel* candidateBackgroundModel;
     void swapPixelsMat(int y, int x);
-    Mat *prevFrame;
+    Mat prevFrame;
 
     GaussianModel* apparentBackgroundModel;
 

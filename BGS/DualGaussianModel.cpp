@@ -13,7 +13,7 @@
 DualGaussianModel::DualGaussianModel(Mat* first_image, int N){
     candidateBackgroundModel = new GaussianModel(first_image, N);
     apparentBackgroundModel = new GaussianModel(first_image, N);
-    prevFrame = first_image;
+    prevFrame = first_image->clone();
     //set up windows
     namedWindow("origin", CV_WINDOW_AUTOSIZE);
     namedWindow("processing", CV_WINDOW_AUTOSIZE);
@@ -43,7 +43,7 @@ void DualGaussianModel::updateModel(Mat *next_frame){
     // 3. 
 
     
-    cv::Mat m_prevImg = prevFrame->clone();
+    cv::Mat m_prevImg = prevFrame.clone();
     cv::Mat m_nextImg= next_frame->clone();
 
     cv::Mat m_outImg;
@@ -52,12 +52,36 @@ void DualGaussianModel::updateModel(Mat *next_frame){
     std::vector<unsigned char> m_status;
     std::vector<float>         m_error;
     
-    
-    // I give up
-//    // TODO: is this really the way to do it?
-    goodFeaturesToTrack(m_prevImg, m_prevPts, 1000, 0.01, 1);
+    // maxCorners – The maximum number of corners to return. If there are more corners
+    // than that will be found, the strongest of them will be returned
+    int maxCorners = 10000;
+    // qualityLevel – Characterizes the minimal accepted quality of image corners;
+    // the value of the parameter is multiplied by the by the best corner quality
+    // measure (which is the min eigenvalue, see cornerMinEigenVal() ,
+    // or the Harris function response, see cornerHarris() ).
+    // The corners, which quality measure is less than the product, will be rejected.
+    // For example, if the best corner has the quality measure = 1500,
+    // and the qualityLevel=0.01 , then all the corners which quality measure is
+    // less than 15 will be rejected.
+    double qualityLevel = 0.01;
+    // minDistance – The minimum possible Euclidean distance between the returned corners
+    double minDistance = 5;
+    // mask – The optional region of interest. If the image is not empty (then it
+    // needs to have the type CV_8UC1 and the same size as image ), it will specify
+    // the region in which the corners are detected
+    cv::Mat mask;
+    // blockSize – Size of the averaging block for computing derivative covariation
+    // matrix over each pixel neighborhood, see cornerEigenValsAndVecs()
+    int blockSize = 7;
+    // useHarrisDetector – Indicates, whether to use operator or cornerMinEigenVal()
+    bool useHarrisDetector = false;
+    // k – Free parameter of Harris detector
+    double k = 0.04;
+    cv::goodFeaturesToTrack( m_prevImg, m_prevPts, maxCorners, qualityLevel, minDistance, mask, blockSize, useHarrisDetector, k );
+
     if(m_prevPts.size() >= 1) {
-        cv::calcOpticalFlowPyrLK(m_prevImg, m_nextImg, m_prevPts, m_nextPts, m_status, m_error);
+        
+        cv::calcOpticalFlowPyrLK(m_prevImg, m_nextImg, m_prevPts, m_nextPts, m_status, m_error, Size(20,20), 5);
      
         //last_frame = cvCloneMat(next_frame);
 
@@ -65,31 +89,35 @@ void DualGaussianModel::updateModel(Mat *next_frame){
         // compute homography using RANSAC
         cv::Mat mask;
         vector <Point2f> prev_corner2, cur_corner2;
-        
+        cv::Mat n = next_frame->clone();
+
         // weed out bad matches
         for(size_t i=0; i < m_status.size(); i++) {
             if(m_status[i]) {
                 prev_corner2.push_back(m_prevPts[i]);
                 cur_corner2.push_back(m_nextPts[i]);
+//                cv::circle(n, m_prevPts[i], 100, cv::Scalar(255, 255, 255), -1);
+//                cv::line(n, m_prevPts[i], m_nextPts[i], cv::Scalar(255,250,255));
+//                cv::circle(n, m_nextPts[i], 100, cv::Scalar(255,255,255), -1);
             }
         }
         
-        cv::Mat H = cv::findHomography(prev_corner2, cur_corner2, CV_RANSAC, 3, mask);
         
+        cv::Mat H = cv::findHomography(prev_corner2,cur_corner2, CV_RANSAC);
 //        Mat M = estimateRigidTransform(prev_corner2,cur_corner2,0);
 //        warpAffine(m_nextImg,m_outImg,M,m_nextImg.size(),INTER_NEAREST|WARP_INVERSE_MAP);
-    
+        warpPerspective(m_nextImg, n, H, m_prevImg.size(), INTER_LINEAR | WARP_INVERSE_MAP);
 //        perspectiveTransform( m_prevImg, m_outImg, H);
         Mat meanCopy = apparentBackgroundModel->frame_u_mat->clone();
         Mat varCopy = apparentBackgroundModel->frame_var_mat->clone();
         Mat cmeanCopy = candidateBackgroundModel->frame_u_mat->clone();
         Mat cvarCopy = candidateBackgroundModel->frame_var_mat->clone();
         
-        warpPerspective(meanCopy, *apparentBackgroundModel->frame_u_mat,H,m_nextImg.size(), INTER_NEAREST, BORDER_CONSTANT  );
-        warpPerspective(varCopy, *apparentBackgroundModel->frame_var_mat,H,m_nextImg.size(), INTER_NEAREST, BORDER_CONSTANT  );
-        warpPerspective(meanCopy, *candidateBackgroundModel->frame_u_mat,H,m_nextImg.size(), INTER_NEAREST, BORDER_CONSTANT  );
-        warpPerspective(varCopy, *candidateBackgroundModel->frame_var_mat,H,m_nextImg.size(), INTER_NEAREST, BORDER_CONSTANT  );
-        
+        warpPerspective(meanCopy, *apparentBackgroundModel->frame_u_mat,H,m_nextImg.size(),  WARP_INVERSE_MAP , BORDER_CONSTANT );
+        warpPerspective(varCopy, *apparentBackgroundModel->frame_var_mat,H,m_nextImg.size(),  WARP_INVERSE_MAP ,BORDER_CONSTANT  );
+        warpPerspective(meanCopy, *candidateBackgroundModel->frame_u_mat,H,m_nextImg.size(),  WARP_INVERSE_MAP,BORDER_CONSTANT   );
+        warpPerspective(varCopy, *candidateBackgroundModel->frame_var_mat,H,m_nextImg.size(), x WARP_INVERSE_MAP ,BORDER_CONSTANT  );
+//
 //        for(int j=0; j<m_status.size(); j++){
 //            if(m_status[j]){
 //                
@@ -100,8 +128,16 @@ void DualGaussianModel::updateModel(Mat *next_frame){
         
         // upd_mean.chatAt(y, x) = previous mapped mu
         
+        for(size_t i=0; i < m_status.size(); i++) {
+            if(m_status[i]) {
+                cv::circle(n, m_prevPts[i], 1, cv::Scalar(255, 255, 255), -1);
+                cv::line(n, m_prevPts[i], m_nextPts[i], cv::Scalar(40,250,255));
+//                cv::circle(n, m_nextPts[i], 1, cv::Scalar(0,255,255), -1);
+            }
+        }
+        
         // variance.charAt(y,x) = previous mapped var
-//        imshow("homography", m_outImg);
+        imshow("homography", n);
         cvWaitKey(1);
     }
     else{
@@ -155,7 +191,8 @@ void DualGaussianModel::updateModel(Mat *next_frame){
     cvWaitKey(1);
     imshow("result", *apparentBackgroundModel->frame_bin_mat);
     cvWaitKey(1);
-    prevFrame = next_frame;
+    cv::Mat next_temp = next_frame->clone();
+    prevFrame = next_temp;
 }
 
 DualGaussianModel::~DualGaussianModel(){

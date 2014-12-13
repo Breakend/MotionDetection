@@ -78,14 +78,14 @@ void test_ser_vs_par(int num_threads)
   ser_time = finish - start;
   printf("Done! -- Serial execution time : %.10e (%f) \n", ser_time, ser_time);
 
-  start = timer();
-  test_tbb(num_threads);
-  finish = timer();
-  par_time = finish - start;
-  printf("Done! -- TBB execution time : %.10e (%f) \n", par_time, par_time);
+  // start = timer();
+  // test_tbb(num_threads);
+  // finish = timer();
+  // par_time = finish - start;
+  // printf("Done! -- TBB execution time : %.10e (%f) \n", par_time, par_time);
 
-  speedup = ser_time / par_time;
-  printf("Speedup: %.10e\n", speedup);
+  // speedup = ser_time / par_time;
+  // printf("Speedup: %.10e\n", speedup);
 }
 
 void test_serial()
