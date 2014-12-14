@@ -118,6 +118,7 @@ void DualGaussianModel::updateModel(Mat *next_frame){
         //warpPerspective(varCopy, *apparentBackgroundModel->frame_var_mat,H,m_nextImg.size(), WARP_INVERSE_MAP, BORDER_CONSTANT);
         //warpPerspective(meanCopy, *candidateBackgroundModel->frame_u_mat,H,m_nextImg.size(), WARP_INVERSE_MAP, BORDER_CONSTANT);
         //warpPerspective(varCopy, *candidateBackgroundModel->frame_var_mat,H,m_nextImg.size(), WARP_INVERSE_MAP, BORDER_CONSTANT);
+
 //
 //        for(int j=0; j<m_status.size(); j++){
 //            if(m_status[j]){

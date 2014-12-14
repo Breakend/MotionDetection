@@ -29,7 +29,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/Users/Breakend/Documents/code/BGS/CUDA_IMPL/build/HW1/cmake_install.cmake")
+  include("/Users/Breakend/Documents/code/BGS/CUDA_IMPL/build/BGS/cmake_install.cmake")
 
 endif()
 

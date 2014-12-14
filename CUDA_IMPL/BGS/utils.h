@@ -1,3 +1,6 @@
+/** 
+* NOTE: this was taken from the UDACITY course HW on CUDA
+*/
 #ifndef UTILS_H__
 #define UTILS_H__
 

@@ -1,9 +1,26 @@
+////
+////  main.cpp
+////  BGS
+////
+////  Created by Peter Henderson on 2014-11-02.
+////  Copyright (c) 2014 Peter Henderson. All rights reserved.
+////
 //
-//  main.cpp
-//  BGS
+//#include <iostream>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include <string>
+//#include <stdlib.h>
+//#include "DualGaussianModel.h"
+//#include <sys/time.h>
 //
-//  Created by Peter Henderson on 2014-11-02.
-//  Copyright (c) 2014 Peter Henderson. All rights reserved.
+//double timer(void)
+//{
+//    struct timeval tv;
+//    gettimeofday(&tv, NULL);
+//    return tv.tv_sec + (((double) tv.tv_usec)/1e6);
+//}
 //
 
 #include <iostream>

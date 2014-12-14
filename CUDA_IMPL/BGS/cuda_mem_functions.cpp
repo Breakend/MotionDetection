@@ -17,6 +17,9 @@
 cv::Mat* image;
 
 unsigned char *d_frame__; 
+unsigned char *d_blurred_image__;
+unsigned char *d_blurring_frame__;
+unsigned char *d_blurred_temp__;
 unsigned char *d_amean__;
 unsigned char *d_avar__;
 int *d_aage__;
@@ -28,11 +31,9 @@ unsigned char *d_bin__;
 size_t numRows() { return image->rows; }
 size_t numCols() { return image->cols; }
 
-//return types are void since any internal error will be handled by quitting
-//no point in returning error codes...
-//returns a pointer to an RGBA version of the input image
-//and a pointer to the single channel grey-scale output
-//on both the host and device
+/**
+* Add relevant memory to device for Dual-SGM model
+*/
 void preProcess(cv::Mat *frame, unsigned char **a_bin, unsigned char **amean, unsigned char **avar,
                 int **aage, unsigned char **cmean, unsigned char **cvar, int **cage, unsigned char **d_frame, 
                 unsigned char **d_bin, unsigned char **d_amean, unsigned char **d_avar, int **d_aage,
@@ -74,13 +75,23 @@ void preProcess(cv::Mat *frame, unsigned char **a_bin, unsigned char **amean, un
   d_cvar__ = *d_cvar;
   d_cage__ = *d_cage;
   d_bin__ = *d_bin;
+
 }
 
-void postProcess(const std::string& output_file, unsigned char* data_ptr) {
-  cv::Mat output(numRows(), numCols(), CV_8UC1, (void*)data_ptr);
-  printf("should show image here");
-  //output the image
-  // cv::imshow(output);
+void preprocessGaussianBlur(cv::Mat *frame, unsigned char** d_frame, unsigned char** d_blurred_image, unsigned char** d_blurred_temp, int N){
+  checkCudaErrors(cudaFree(0));
+  image = frame;
+  unsigned char *image_ptr = frame->ptr<unsigned char>(0);
+  const size_t numPixels = numRows() * numCols();
+
+  checkCudaErrors(cudaMalloc(d_frame, sizeof(unsigned char) * numPixels));
+  checkCudaErrors(cudaMalloc(d_blurred_image, sizeof(unsigned char) * numPixels));
+  checkCudaErrors(cudaMalloc(d_blurred_temp, sizeof(unsigned char) * numPixels));
+
+  checkCudaErrors(cudaMemcpy(*d_frame, image_ptr, sizeof(unsigned char) * numPixels, cudaMemcpyHostToDevice));
+  d_blurred_image__ = *d_blurred_image;
+  d_blurring_frame__ = *d_frame;
+  d_blurred_temp__ = *d_blurred_temp;
 }
 
 void cleanup()
@@ -94,10 +105,9 @@ void cleanup()
   cudaFree(d_cage__);
 }
 
-void generateReferenceImage(std::string input_filename, std::string output_filename)
+void cleanup_blur()
 {
-  cv::Mat reference = cv::imread(input_filename, CV_LOAD_IMAGE_GRAYSCALE);
-
-  cv::imwrite(output_filename, reference);
-
+  cudaFree(d_blurred_image__);
+  cudaFree(d_blurring_frame__);
+  cudaFree(d_blurred_temp__);
 }

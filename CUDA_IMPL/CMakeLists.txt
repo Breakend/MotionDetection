@@ -1,12 +1,10 @@
 ############################################################################
 # <summary> CMakeLists.txt for OpenCV and CUDA. </summary>
-# <date>    2012-02-07          </date>
-# <author>  Quan Tran Minh. edit by Johannes Kast, Michael Sarahan </author>
-# <email>   quantm@unist.ac.kr  kast.jo@googlemail.com msarahan@gmail.com</email>
+# Modified from UDACITY course on CUDA
 ############################################################################
 
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(cs344)
+project(ecse420)
 
 find_package(OpenCV REQUIRED)
 find_package(CUDA REQUIRED)
@@ -39,7 +37,7 @@ if(CUDA_FOUND)
   # add debugging to CUDA NVCC flags.  For NVidia's NSight tools.
   set(CUDA_NVCC_FLAGS_DEBUG ${CUDA_NVCC_FLAGS_DEBUG} "-G")
 
-  add_subdirectory (HW1)
+  add_subdirectory (BGS)
 else(CUDA_FOUND)
   message("CUDA is not installed on this system.")
 endif()
