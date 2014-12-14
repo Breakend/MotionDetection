@@ -77,6 +77,7 @@ void DualGaussianModel::updateModel(Mat *next_frame){
     bool useHarrisDetector = false;
     // k – Free parameter of Harris detector
     double k = 0.04;
+    cv::Mat n;
     cv::goodFeaturesToTrack( m_prevImg, m_prevPts, maxCorners, qualityLevel, minDistance, mask, blockSize, useHarrisDetector, k );
 
     if(m_prevPts.size() >= 1) {
@@ -89,7 +90,7 @@ void DualGaussianModel::updateModel(Mat *next_frame){
         // compute homography using RANSAC
         cv::Mat mask;
         vector <Point2f> prev_corner2, cur_corner2;
-        cv::Mat n = next_frame->clone();
+        n = next_frame->clone();
 
         // weed out bad matches
         for(size_t i=0; i < m_status.size(); i++) {
@@ -113,10 +114,10 @@ void DualGaussianModel::updateModel(Mat *next_frame){
         Mat cmeanCopy = candidateBackgroundModel->frame_u_mat->clone();
         Mat cvarCopy = candidateBackgroundModel->frame_var_mat->clone();
         
-        warpPerspective(meanCopy, *apparentBackgroundModel->frame_u_mat,H,m_nextImg.size(),  WARP_INVERSE_MAP , BORDER_CONSTANT );
-        warpPerspective(varCopy, *apparentBackgroundModel->frame_var_mat,H,m_nextImg.size(),  WARP_INVERSE_MAP ,BORDER_CONSTANT  );
-        warpPerspective(meanCopy, *candidateBackgroundModel->frame_u_mat,H,m_nextImg.size(),  WARP_INVERSE_MAP,BORDER_CONSTANT   );
-        warpPerspective(varCopy, *candidateBackgroundModel->frame_var_mat,H,m_nextImg.size(), x WARP_INVERSE_MAP ,BORDER_CONSTANT  );
+        //warpPerspective(meanCopy, *apparentBackgroundModel->frame_u_mat,H,m_nextImg.size(), WARP_INVERSE_MAP, BORDER_CONSTANT);
+        //warpPerspective(varCopy, *apparentBackgroundModel->frame_var_mat,H,m_nextImg.size(), WARP_INVERSE_MAP, BORDER_CONSTANT);
+        //warpPerspective(meanCopy, *candidateBackgroundModel->frame_u_mat,H,m_nextImg.size(), WARP_INVERSE_MAP, BORDER_CONSTANT);
+        //warpPerspective(varCopy, *candidateBackgroundModel->frame_var_mat,H,m_nextImg.size(), WARP_INVERSE_MAP, BORDER_CONSTANT);
 //
 //        for(int j=0; j<m_status.size(); j++){
 //            if(m_status[j]){
@@ -128,24 +129,30 @@ void DualGaussianModel::updateModel(Mat *next_frame){
         
         // upd_mean.chatAt(y, x) = previous mapped mu
         
-        for(size_t i=0; i < m_status.size(); i++) {
-            if(m_status[i]) {
-                cv::circle(n, m_prevPts[i], 1, cv::Scalar(255, 255, 255), -1);
-                cv::line(n, m_prevPts[i], m_nextPts[i], cv::Scalar(40,250,255));
-//                cv::circle(n, m_nextPts[i], 1, cv::Scalar(0,255,255), -1);
-            }
-        }
+//         for(size_t i=0; i < m_status.size(); i++) {
+//             if(m_status[i]) {
+//                 cv::circle(n, m_prevPts[i], 1, cv::Scalar(255, 255, 255), -1);
+//                 cv::line(n, m_prevPts[i], m_nextPts[i], cv::Scalar(40,250,255));
+// //                cv::circle(n, m_nextPts[i], 1, cv::Scalar(0,255,255), -1);
+//             }
+//         }
         
         // variance.charAt(y,x) = previous mapped var
         imshow("homography", n);
-        cvWaitKey(1);
+            cv::Mat next_temp = next_frame->clone();
+    prevFrame = next_temp;
+        next_frame = &n;
+        cvWaitKey(0);
     }
     else{
+         cv::Mat next_temp = next_frame->clone();
+    prevFrame = next_temp;
         printf("NO matching points");
     }
 
     // set the next frame...
     // next_frame
+
 
 
     for(int y = 0; y < next_frame->rows; ++y)
@@ -191,8 +198,6 @@ void DualGaussianModel::updateModel(Mat *next_frame){
     cvWaitKey(1);
     imshow("result", *apparentBackgroundModel->frame_bin_mat);
     cvWaitKey(1);
-    cv::Mat next_temp = next_frame->clone();
-    prevFrame = next_temp;
 }
 
 DualGaussianModel::~DualGaussianModel(){

@@ -1,7 +1,8 @@
 
 #include "DualSGM.hpp"
 
-#define SHOW_IMAGES 0
+#define SHOW_IMAGES 1
+#define AGE_THRESH 30
 
 DualSGM::DualSGM(Mat* first_image, int N) {
     parallel_time = 0;
@@ -75,7 +76,10 @@ void DualSGM::serialUpdateModel(Mat *next_frame) {
                 //write into matrix
                 app_u_mat->at<uchar>(y,x) = app_u_sclr.val[i];
                 app_var_mat->at<uchar>(y,x) = app_var_sclr.val[i];
-                app_ages[x][y]++;
+                
+                if (app_ages[x][y] < AGE_THRESH) {
+                    app_ages[x][y]++;
+                }
 
             } else if (pow(cdiff, 2) < meanThreshold * can_var_sclr.val[0]) {
                 //candidateBackgroundModel->updatePixel(next_frame, y, x);
@@ -88,7 +92,11 @@ void DualSGM::serialUpdateModel(Mat *next_frame) {
                 //write into matrix
                 can_u_mat->at<uchar>(y,x) = can_u_sclr.val[i];
                 can_var_mat->at<uchar>(y,x) = can_var_sclr.val[i];
-                can_ages[x][y]++;
+                
+                // Cap ages
+                if (can_ages[x][y] < AGE_THRESH) {
+                    can_ages[x][y]++;
+                }
 
             } else {
                 //can_ages[x][y] = 1;

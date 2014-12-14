@@ -79,6 +79,7 @@ void GaussianModel::updatePixel(Mat * next_frame, int y, int x){
     int i = 0;
 //    alpha = .0001;
     alpha = 1.0/(double)ages[x][y];
+    printf("Alpha: %f", alpha);
     pixel_u.val[i] = (1.0-alpha) * pixel_u.val[i] + (alpha) * pixel.val[i];
     float V =  pow((pixel_u.val[i] - pixel.val[i]),2);
     pixel_var.val[i] = (1.0-alpha) * pixel_var.val[i] + alpha*V;
@@ -87,7 +88,10 @@ void GaussianModel::updatePixel(Mat * next_frame, int y, int x){
     frame_u_mat->at<uchar>(y, x) = pixel_u.val[i];
     frame_var_mat->at<uchar>(y, x) = pixel_var.val[i];
     
-    ages[x][y]++;
+    // Truncate age at 30
+    if (ages[x][y] < 30) {
+        ages[x][y]++;
+    }
 }
 
 void GaussianModel::updateBinary(Mat * next_frame){

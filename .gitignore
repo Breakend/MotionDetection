@@ -10,3 +10,6 @@ BGS/tbb/*.gch
 BGS/tbb/tbb_main
 CUDA_IMPL/bin/*
 CUDA_IMPL/build/*
+BGS/serial/*.o
+BGS/serial/*.gch
+BGS/serial/serial_main
