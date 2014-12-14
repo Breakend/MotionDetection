@@ -8,15 +8,27 @@
 #include <stdlib.h>
 
 #include "DualSGM.hpp"
+#include "Blur.hpp"
+
+// Must be odd blur size
+#define BLUR_SIZE 5 
+
 
 void test_serial();
+void serialGaussianBlur(cv::Mat frame, cv::Mat destination, cv::Size size);
+void createGaussianFilter(float *gaussian_filter, int width);
 double timer(void);
 
 int main(int argc, char *argv[]) 
 {
   //int num_threads = atoi(argv[1]);
 
-  test_serial();
+  cv::Mat frame = imread("../Videos/badminton/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
+  cv::Mat destination;
+  //serialGaussianBlur(frame, destination, Size(BLUR_SIZE,BLUR_SIZE));
+  serialMedianBlur(frame, destination, 9);
+
+  //test_serial();
 
   // badminton
   // boulevard

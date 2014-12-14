@@ -1,6 +1,6 @@
 
-serial_main: DualSGM.o serial_main.o
-	g++ -std=c++11 DualSGM.o serial_main.o -o serial_main `pkg-config --cflags --libs opencv`
+serial_main: Blur.o DualSGM.o serial_main.o
+	g++ -std=c++11 Blur.o DualSGM.o serial_main.o -o serial_main `pkg-config --cflags --libs opencv`
 	rm -rf *o *gch
 
 serial_main.o: serial_main.cpp 
@@ -9,6 +9,8 @@ serial_main.o: serial_main.cpp
 DualSGM.o: DualSGM.hpp DualSGM.cpp 
 	g++ -std=c++11 -c DualSGM.hpp DualSGM.cpp 
 
+Blur.o: Blur.hpp Blur.cpp 
+	g++ -std=c++11 -c Blur.hpp Blur.cpp 
 
 clean:
 	rm -rf *o *gch tbb_main

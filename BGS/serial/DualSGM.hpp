@@ -1,5 +1,4 @@
 
-
 #ifndef __DualSGM__
 #define __DualSGM__
 
