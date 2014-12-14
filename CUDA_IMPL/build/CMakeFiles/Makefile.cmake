@@ -7,12 +7,12 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 # The top level Makefile was generated from the following files:
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
+  "../BGS/CMakeLists.txt"
   "../CMakeLists.txt"
-  "../HW1/CMakeLists.txt"
+  "BGS/CMakeFiles/BGS.dir/BGS_generated_cuda_kernels.cu.o.depend"
   "CMakeFiles/3.0.2/CMakeCCompiler.cmake"
   "CMakeFiles/3.0.2/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.0.2/CMakeSystem.cmake"
-  "HW1/CMakeFiles/HW1.dir/HW1_generated_student_func.cu.o.depend"
   "/usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CMakeCInformation.cmake"
   "/usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CMakeCXXInformation.cmake"
   "/usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CMakeCommonLanguageInclude.cmake"
@@ -49,10 +49,10 @@ set(CMAKE_MAKEFILE_OUTPUTS
 # Byproducts of CMake generate step:
 set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
-  "HW1/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "BGS/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "HW1/CMakeFiles/HW1.dir/DependInfo.cmake"
+  "BGS/CMakeFiles/BGS.dir/DependInfo.cmake"
   )

@@ -53,53 +53,53 @@ CMAKE_SOURCE_DIR = /Users/Breakend/Documents/code/BGS/CUDA_IMPL
 CMAKE_BINARY_DIR = /Users/Breakend/Documents/code/BGS/CUDA_IMPL/build
 
 #=============================================================================
-# Directory level rules for directory HW1
+# Directory level rules for directory BGS
 
 # Convenience name for "all" pass in the directory.
-HW1/all: HW1/CMakeFiles/HW1.dir/all
-.PHONY : HW1/all
+BGS/all: BGS/CMakeFiles/BGS.dir/all
+.PHONY : BGS/all
 
 # Convenience name for "clean" pass in the directory.
-HW1/clean: HW1/CMakeFiles/HW1.dir/clean
-.PHONY : HW1/clean
+BGS/clean: BGS/CMakeFiles/BGS.dir/clean
+.PHONY : BGS/clean
 
 # Convenience name for "preinstall" pass in the directory.
-HW1/preinstall:
-.PHONY : HW1/preinstall
+BGS/preinstall:
+.PHONY : BGS/preinstall
 
 #=============================================================================
-# Target rules for target HW1/CMakeFiles/HW1.dir
+# Target rules for target BGS/CMakeFiles/BGS.dir
 
 # All Build rule for target.
-HW1/CMakeFiles/HW1.dir/all:
-	$(MAKE) -f HW1/CMakeFiles/HW1.dir/build.make HW1/CMakeFiles/HW1.dir/depend
-	$(MAKE) -f HW1/CMakeFiles/HW1.dir/build.make HW1/CMakeFiles/HW1.dir/build
+BGS/CMakeFiles/BGS.dir/all:
+	$(MAKE) -f BGS/CMakeFiles/BGS.dir/build.make BGS/CMakeFiles/BGS.dir/depend
+	$(MAKE) -f BGS/CMakeFiles/BGS.dir/build.make BGS/CMakeFiles/BGS.dir/build
 	$(CMAKE_COMMAND) -E cmake_progress_report /Users/Breakend/Documents/code/BGS/CUDA_IMPL/build/CMakeFiles  1 2 3 4
-	@echo "Built target HW1"
-.PHONY : HW1/CMakeFiles/HW1.dir/all
+	@echo "Built target BGS"
+.PHONY : BGS/CMakeFiles/BGS.dir/all
 
 # Include target in all.
-all: HW1/CMakeFiles/HW1.dir/all
+all: BGS/CMakeFiles/BGS.dir/all
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-HW1/CMakeFiles/HW1.dir/rule: cmake_check_build_system
+BGS/CMakeFiles/BGS.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/Breakend/Documents/code/BGS/CUDA_IMPL/build/CMakeFiles 4
-	$(MAKE) -f CMakeFiles/Makefile2 HW1/CMakeFiles/HW1.dir/all
+	$(MAKE) -f CMakeFiles/Makefile2 BGS/CMakeFiles/BGS.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/Breakend/Documents/code/BGS/CUDA_IMPL/build/CMakeFiles 0
-.PHONY : HW1/CMakeFiles/HW1.dir/rule
+.PHONY : BGS/CMakeFiles/BGS.dir/rule
 
 # Convenience name for target.
-HW1: HW1/CMakeFiles/HW1.dir/rule
-.PHONY : HW1
+BGS: BGS/CMakeFiles/BGS.dir/rule
+.PHONY : BGS
 
 # clean rule for target.
-HW1/CMakeFiles/HW1.dir/clean:
-	$(MAKE) -f HW1/CMakeFiles/HW1.dir/build.make HW1/CMakeFiles/HW1.dir/clean
-.PHONY : HW1/CMakeFiles/HW1.dir/clean
+BGS/CMakeFiles/BGS.dir/clean:
+	$(MAKE) -f BGS/CMakeFiles/BGS.dir/build.make BGS/CMakeFiles/BGS.dir/clean
+.PHONY : BGS/CMakeFiles/BGS.dir/clean
 
 # clean rule for target.
-clean: HW1/CMakeFiles/HW1.dir/clean
+clean: BGS/CMakeFiles/BGS.dir/clean
 .PHONY : clean
 
 #=============================================================================

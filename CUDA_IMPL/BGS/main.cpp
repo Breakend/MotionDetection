@@ -1,19 +1,18 @@
-//Udacity HW1 Solution
-
 #include <iostream>
 #include "timer.h"
 #include "utils.h"
 #include <string>
 #include <stdio.h>
-#include "reference_calc.h"
 #include "compare.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <sys/time.h>
+#include "filter.h"
 
+#define OPENCV_PROPROCESS 1
 
-void your_rgba_to_greyscale(unsigned char * const d_frame,
+void gaussian_background(unsigned char * const d_frame,
                             unsigned char* const d_amean, 
                             unsigned char* const d_cmean,
                             unsigned char* const d_avar,
@@ -22,9 +21,41 @@ void your_rgba_to_greyscale(unsigned char * const d_frame,
                             int * const d_aage,
                             int * const d_cage,
                             size_t numRows, size_t numCols);
+
+/*
+Two dimensional convolution
+*/
+void gaussian_filter(unsigned char* d_frame,
+                     unsigned char* d_blurred,
+                     const float* const d_gfilter,
+                     size_t d_filter_width,
+                     size_t d_filter_height,
+                     size_t numRows, size_t numCols);
+
+/*
+One dimensional, separable convolution
+*/
+void gaussian_filter_separable(unsigned char* d_frame,
+                     unsigned char* d_blurred,
+                    unsigned char* d_blurred_temp,
+                     const float* const d_gfilter,
+                     size_t d_filter_size,
+                     size_t numRows, size_t numCols);
+
+void median_filter(unsigned char* d_frame,
+                     unsigned char* d_blurred,
+                     size_t numRows, size_t numCols);
+
+void gaussian_and_median_blur(unsigned char* d_frame,
+                     unsigned char* d_blurred,
+                     unsigned char* d_blurred_temp,
+                     const float* const d_gfilter,
+                     size_t d_filter_size,
+                     size_t numRows, size_t numCols);
+
 void test_cuda();
 //include the definitions of the above functions for this homework
-#include "HW1.cpp"
+#include "cuda_mem_functions.cpp"
 
 
 double cpu_timer(void)
@@ -37,27 +68,10 @@ double cpu_timer(void)
 
 int main(int argc, char *argv[]) 
 {
-  double start, finish;
-  double ser_time, par_time, speedup; 
-
-  // start = timer();
-  // test_serial();
-  // finish = timer();
-  // ser_time = finish - start;
-  // printf("Done! -- Serial execution time : %.10e\n", ser_time);
-
-  // 
-  // start = timer();
-  // test_tbb();
-  // finish = timer();
-  // par_time = finish - start;
-  // printf("Done! -- TBB execution time : %.10e\n", par_time);
-
-  // speedup = ser_time / par_time;
-  // printf("Speedup: %.10e\n", speedup);
 
   test_cuda();
 
+  //TODO: could do image comparison against ground truth using the compare functions
   return 0;
 }
 
@@ -121,8 +135,9 @@ void test_cuda(){
   * Device mem;
   */
 
-  unsigned char *d_frame, *d_bin, *d_amean, *d_avar, *d_cmean, *d_cvar;
+  unsigned char *d_frame, *d_bin, *d_amean, *d_avar, *d_blurred_temp, *d_cmean, *d_cvar, *d_frame_blurred, *d_frame_to_blur, *blurred_frame;
   int *d_cage, *d_aage;
+  float *d_gaussian_filter, *gaussian_filter_vals;
   char buff[100];
 
   int i = 2;
@@ -137,7 +152,7 @@ void test_cuda(){
   /*
   * Initialize the arrays
   */
-  cv::Mat am, av, cm, can_v, b;
+  cv::Mat am, av, cm, can_v, b, blurred;
   am = frame.clone();
   if(!am.isContinuous()){
     printf("am not continuous");
@@ -169,6 +184,13 @@ void test_cuda(){
   }
   binary  = b.ptr<unsigned char>(0);
 
+  blurred.create(frame.rows, frame.cols, CV_8UC1);
+  if(!blurred.isContinuous()){
+    printf("am not continuous");
+    exit(1);
+  }
+  blurred_frame  = blurred.ptr<unsigned char>(0);
+
   a_age = (int *) std::calloc(frame.cols*frame.rows, sizeof(int));
   c_age = (int *) std::calloc(frame.cols*frame.rows, sizeof(int));
   
@@ -177,41 +199,82 @@ void test_cuda(){
       c_age[i] = 1;
   }
 
-  // return
 
+  const int BLUR_SIZE = 9;
+  const float SIGMA = 5.f;
+  cv::Mat temp_kernel = cv::getGaussianKernel(BLUR_SIZE, SIGMA, CV_32F);
+  gaussian_filter_vals = temp_kernel.ptr<float>(0);
+
+  // gaussian_filter_vals = createGaussianFilter(BLUR_SIZE);
+  //put it into memory once.
+  checkCudaErrors(cudaMalloc(&d_gaussian_filter, sizeof(float) * BLUR_SIZE * BLUR_SIZE));
+  checkCudaErrors(cudaMemcpy(d_gaussian_filter, gaussian_filter_vals, sizeof(float) * BLUR_SIZE * BLUR_SIZE, cudaMemcpyHostToDevice));
+
+
+  // for(int k=0;k<BLUR_SIZE;k++){
+  //   printf("%f ", gaussian_filter_vals[k]);
+  // }
+  size_t numPixels;
+
+  GpuTimer timer;
 
   while(i < 500){
-    cv::Mat dst, destination;
-    cv::GaussianBlur( frame, destination, cv::Size(9,9), 0, 0 );
-    cv::medianBlur ( destination, dst, 3 );
 
-    t_parallel_s = cpu_timer();
-  //load the image and give us our input and output pointers
-  preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
+    #if OPENCV_PROPROCESS == 1 
+      cv::Mat dst, destination;
+      cv::GaussianBlur( frame, destination, cv::Size(9,9), 0, 0 );
+      cv::medianBlur ( destination, dst, 3 );
+      t_parallel_s = cpu_timer();
+      //load the image and give us our input and output pointers
+      preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
+              &d_bin, &d_amean, &d_avar, &d_aage, &d_cmean, &d_cvar, &d_cage);
+    #else
+      //our own GPU median and Gaussian blur
+      t_parallel_s = cpu_timer();
+
+      preprocessGaussianBlur(&frame, &d_frame_to_blur, &d_frame_blurred, &d_blurred_temp, BLUR_SIZE);
+      timer.Start();
+      gaussian_and_median_blur(d_frame_to_blur,
+                      d_frame_blurred,
+                      d_blurred_temp,
+                      d_gaussian_filter,
+                      BLUR_SIZE,
+                      numRows(), numCols());
+
+      timer.Stop();
+      cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
+
+      t_gpu += (timer.Elapsed()/1000);
+      size_t numPixels = numRows()*numCols();
+
+      checkCudaErrors(cudaMemcpy(blurred_frame, d_frame_blurred, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
+
+      cv::Mat dst(cv::Size(numCols(), numRows()),CV_8UC1,blurred_frame);
+
+      cleanup_blur();
+
+      t_parallel_f = cpu_timer();
+      t_parallel += t_parallel_f - t_parallel_s;
+
+      t_parallel_s = cpu_timer();
+      //load the image and give us our input and output pointers
+      preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
                 &d_bin, &d_amean, &d_avar, &d_aage, &d_cmean, &d_cvar, &d_cage);
 
+    #endif
     /*
      See how much time is actually spent in the GPU
     */
-    GpuTimer timer;
     timer.Start();
     //call the students' code
-    your_rgba_to_greyscale(d_frame,d_amean,d_cmean,d_avar,d_cvar, d_bin, d_aage, d_cage,
-                            numRows(), numCols());
+    gaussian_background(d_frame,d_amean,d_cmean,d_avar,d_cvar, d_bin, d_aage, d_cage, numRows(), numCols());
 
     timer.Stop();
     cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 
     t_gpu += (timer.Elapsed()/1000);
-    // int err = printf("Your code ran in: %f msecs.\n", t_gpu);
+    numPixels = numRows()*numCols();
 
-    // if (err < 0) {
-    //   //Couldn't print! Probably the student closed stdout - bad news
-    //   std::cerr << "Couldn't print timing information! STDOUT Closed!" << std::endl;
-    //   exit(1);
-    // }
-
-    size_t numPixels = numRows()*numCols();
     checkCudaErrors(cudaMemcpy(a_mean, d_amean, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
     checkCudaErrors(cudaMemcpy(a_variance, d_avar, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
     checkCudaErrors(cudaMemcpy(binary, d_bin, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
@@ -233,10 +296,12 @@ void test_cuda(){
     std::string buffAsStdStr = buff;
     const char * c = buffAsStdStr.c_str();
     frame = readImage(c);
+    // printf("%d\n", i);
   }
+
+  cudaFree(d_gaussian_filter);
   //END LOOP
   cvDestroyWindow("origin");
-
   t_total_f = cpu_timer();
   t_total = t_total_f-t_total_s;
   t_serial = t_total-t_parallel;

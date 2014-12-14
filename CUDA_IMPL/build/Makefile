@@ -103,17 +103,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named HW1
+# Target rules for targets named BGS
 
 # Build rule for target.
-HW1: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 HW1
-.PHONY : HW1
+BGS: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 BGS
+.PHONY : BGS
 
 # fast build rule for target.
-HW1/fast:
-	$(MAKE) -f HW1/CMakeFiles/HW1.dir/build.make HW1/CMakeFiles/HW1.dir/build
-.PHONY : HW1/fast
+BGS/fast:
+	$(MAKE) -f BGS/CMakeFiles/BGS.dir/build.make BGS/CMakeFiles/BGS.dir/build
+.PHONY : BGS/fast
 
 # Help Target
 help:
@@ -123,7 +123,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... HW1"
+	@echo "... BGS"
 .PHONY : help
 
 

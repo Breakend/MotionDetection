@@ -128,7 +128,7 @@ CMAKE_OSX_DEPLOYMENT_TARGET:STRING=
 CMAKE_OSX_SYSROOT:STRING=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=cs344
+CMAKE_PROJECT_NAME:STATIC=ecse420
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -303,10 +303,10 @@ OpenCV_LIB_DIR_DBG:PATH=/usr/local/Cellar/opencv/2.4.6.1/lib
 OpenCV_LIB_DIR_OPT:PATH=/usr/local/Cellar/opencv/2.4.6.1/lib
 
 //Value Computed by CMake
-cs344_BINARY_DIR:STATIC=/Users/Breakend/Documents/code/BGS/CUDA_IMPL/build
+ecse420_BINARY_DIR:STATIC=/Users/Breakend/Documents/code/BGS/CUDA_IMPL/build
 
 //Value Computed by CMake
-cs344_SOURCE_DIR:STATIC=/Users/Breakend/Documents/code/BGS/CUDA_IMPL
+ecse420_SOURCE_DIR:STATIC=/Users/Breakend/Documents/code/BGS/CUDA_IMPL
 
 
 ########################
@@ -442,7 +442,7 @@ CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 CUDA_64_BIT_DEVICE_CODE-ADVANCED:INTERNAL=1
 //List of intermediate files that are part of the cuda dependency
 // scanning.
-CUDA_ADDITIONAL_CLEAN_FILES:INTERNAL=/Users/Breakend/Documents/code/BGS/CUDA_IMPL/build/HW1/CMakeFiles/HW1.dir//HW1_generated_student_func.cu.o.depend
+CUDA_ADDITIONAL_CLEAN_FILES:INTERNAL=/Users/Breakend/Documents/code/BGS/CUDA_IMPL/build/BGS/CMakeFiles/BGS.dir//BGS_generated_cuda_kernels.cu.o.depend
 //ADVANCED property for variable: CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE
 CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CUDA_CUDART_LIBRARY

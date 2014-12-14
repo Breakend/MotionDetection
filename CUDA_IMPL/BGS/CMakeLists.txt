@@ -15,9 +15,9 @@ SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -stdlib=libstdc++" )
 
 file( GLOB  hdr *.hpp *.h )
 file( GLOB  cu  *.cu)
-SET (HW1_files main.cpp reference_calc.cpp compare.cpp)
+SET (BGS_files main.cpp compare.cpp filter.cpp)
 
-CUDA_ADD_EXECUTABLE(HW1 ${HW1_files} ${hdr} ${cu})
+CUDA_ADD_EXECUTABLE(BGS ${BGS_files} ${hdr} ${cu})
 include_directories(${OpenCV_INCLUDE_DIRS})
-target_link_libraries(HW1 ${OpenCV_LIBS})
+target_link_libraries(BGS ${OpenCV_LIBS})
 
