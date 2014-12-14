@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#define THREAD_SIZE 21
+#define THREAD_SIZE 11
 
 __global__
 void gaussian_background_kernel(unsigned char * const d_frame,

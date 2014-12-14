@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include "filter.h"
 
+#define OPENCV_PROPROCESS 1
 
 void gaussian_background(unsigned char * const d_frame,
                             unsigned char* const d_amean, 
@@ -210,43 +211,60 @@ void test_cuda(){
   checkCudaErrors(cudaMemcpy(d_gaussian_filter, gaussian_filter_vals, sizeof(float) * BLUR_SIZE * BLUR_SIZE, cudaMemcpyHostToDevice));
 
 
-  for(int k=0;k<BLUR_SIZE;k++){
-    printf("%f ", gaussian_filter_vals[k]);
-  }
+  // for(int k=0;k<BLUR_SIZE;k++){
+  //   printf("%f ", gaussian_filter_vals[k]);
+  // }
   size_t numPixels;
 
+  GpuTimer timer;
 
-  while(i < 150){
-    // cv::Mat dst, destination;
+  while(i < 500){
 
-    preprocessGaussianBlur(&frame, &d_frame_to_blur, &d_frame_blurred, &d_blurred_temp, BLUR_SIZE);
+    #if OPENCV_PROPROCESS == 1 
+      cv::Mat dst, destination;
+      cv::GaussianBlur( frame, destination, cv::Size(9,9), 0, 0 );
+      cv::medianBlur ( destination, dst, 3 );
+      t_parallel_s = cpu_timer();
+      //load the image and give us our input and output pointers
+      preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
+              &d_bin, &d_amean, &d_avar, &d_aage, &d_cmean, &d_cvar, &d_cage);
+    #else
+      //our own GPU median and Gaussian blur
+      t_parallel_s = cpu_timer();
 
-    gaussian_and_median_blur(d_frame_to_blur,
-                    d_frame_blurred,
-                    d_blurred_temp,
-                    d_gaussian_filter,
-                    BLUR_SIZE,
-                    numRows(), numCols());
+      preprocessGaussianBlur(&frame, &d_frame_to_blur, &d_frame_blurred, &d_blurred_temp, BLUR_SIZE);
+      timer.Start();
+      gaussian_and_median_blur(d_frame_to_blur,
+                      d_frame_blurred,
+                      d_blurred_temp,
+                      d_gaussian_filter,
+                      BLUR_SIZE,
+                      numRows(), numCols());
 
-    cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
-    size_t numPixels = numRows()*numCols();
+      timer.Stop();
+      cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 
-    checkCudaErrors(cudaMemcpy(blurred_frame, d_frame_blurred, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
+      t_gpu += (timer.Elapsed()/1000);
+      size_t numPixels = numRows()*numCols();
 
-    cv::Mat dst(cv::Size(numCols(), numRows()),CV_8UC1,blurred_frame);
-    // // cv::GaussianBlur( frame, destination, cv::Size(9,9), 0, 0 );
-    // // cv::medianBlur ( destination, dst, 3 );
-    cleanup_blur();
+      checkCudaErrors(cudaMemcpy(blurred_frame, d_frame_blurred, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
 
-    t_parallel_s = cpu_timer();
-    //load the image and give us our input and output pointers
-    preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
+      cv::Mat dst(cv::Size(numCols(), numRows()),CV_8UC1,blurred_frame);
+
+      cleanup_blur();
+
+      t_parallel_f = cpu_timer();
+      t_parallel += t_parallel_f - t_parallel_s;
+
+      t_parallel_s = cpu_timer();
+      //load the image and give us our input and output pointers
+      preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
                 &d_bin, &d_amean, &d_avar, &d_aage, &d_cmean, &d_cvar, &d_cage);
 
+    #endif
     /*
      See how much time is actually spent in the GPU
     */
-    GpuTimer timer;
     timer.Start();
     //call the students' code
     gaussian_background(d_frame,d_amean,d_cmean,d_avar,d_cvar, d_bin, d_aage, d_cage, numRows(), numCols());
@@ -278,7 +296,7 @@ void test_cuda(){
     std::string buffAsStdStr = buff;
     const char * c = buffAsStdStr.c_str();
     frame = readImage(c);
-    printf("%d\n", i);
+    // printf("%d\n", i);
   }
 
   cudaFree(d_gaussian_filter);
