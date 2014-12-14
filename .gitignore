@@ -13,3 +13,6 @@ CUDA_IMPL/build/*
 BGS/serial/*.o
 BGS/serial/*.gch
 BGS/serial/serial_main
+BGS/final/*.o
+BGS/final/*.gch
+BGS/final/main
