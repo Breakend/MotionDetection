@@ -3,9 +3,9 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <opencv2/video/background_segm.hpp>
 
 #include "DualSGM.hpp"
-
 
 // Path to images (badminton, boulevard, sofa, traffic)
 const char* PATH = "../Videos/sofa/input/";
@@ -13,37 +13,62 @@ const char* PATH = "../Videos/sofa/input/";
 const int start = 01;
 const int end = 500;
 
-
-void get_speedup(int num_threads);
-void run_serial();
-double run_tbb(int num_threads);
-void control();
+void run_test(int num_threads, int use_opencv_blur, int do_motion_comp, DualSGM::Timing *run_times);
 const char* nextImagePathForIndex(int i);
 double timer(void);
 
 int main(int argc, char *argv[]) 
 {  
-  if (argc != 2) {
-    printf("Missing 1 arg. Exiting\n");
+  if (argc != 4) {
+    printf("Missing args. Exiting\n");
     return 0;
   }
 
   int num_threads = atoi(argv[1]);
+  int use_opencv_blur = atoi(argv[2]);
+  int do_motion_comp = atoi(argv[3]);
 
-  //cv::Mat frame = imread("../Videos/badminton/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
-  //cv::Mat destination;
-  //serialGaussianBlur(frame, destination, Size(BLUR_SIZE,BLUR_SIZE));
-  //serialMedianBlur(frame, destination, 9);
+  DualSGM::Timing run_times;
+  run_times.t_exec = 0;
+  run_times.t_blur = 0;
+  run_times.t_mtnc = 0;
+  run_times.t_dsgm = 0;
+  run_times.t_serl = 0;
 
-  //run_tbb(num_threads);
-  get_speedup(num_threads); 
+  run_test(num_threads, use_opencv_blur, do_motion_comp, &run_times);
 
-  //control();
+  run_times.t_serl = run_times.t_exec - run_times.t_blur - run_times.t_mtnc - run_times.t_dsgm;
+
+  printf("num_threads t_exec t_blur t_mtnc t_dsgm t_serl\n");
+  printf("%i %f %f %f %f %f\n", num_threads, 
+    run_times.t_exec, run_times.t_blur, run_times.t_mtnc, run_times.t_dsgm, run_times.t_serl);
 
   return 0;
 }
 
+void run_test(int num_threads, int use_opencv_blur, int do_motion_comp, DualSGM::Timing *run_times)
+{
+  double t_exec_start = timer();
+  Mat frame = imread(nextImagePathForIndex(1),  CV_LOAD_IMAGE_GRAYSCALE);
+  DualSGM dsgm(&frame, 10);
+  for (int i = start + 1; i < end; i++) {
+    frame = imread(nextImagePathForIndex(i), CV_LOAD_IMAGE_GRAYSCALE);
+    dsgm.updateModel(&frame, num_threads, use_opencv_blur, do_motion_comp, run_times);
+  }
+  run_times->t_exec = timer() - t_exec_start;
+}
 
+// double start, end, dsgm_proc;
+// start = timer();
+// dsgm_proc = run_test(num_threads, use_opencv_blur, do_motion_comp);
+// end = timer();
+
+// double t_exec = end - start;
+
+// printf("num_threads t_exec t_dsgm\n");
+// printf("%i %f %f\n", num_threads, t_exec, dsgm_proc);
+
+/*
 void get_speedup(int num_threads)
 {
   double ser_start, ser_end;
@@ -97,7 +122,30 @@ void control()
       frame = imread(nextImagePathForIndex(i), CV_LOAD_IMAGE_GRAYSCALE);
       dsgm.serialUpdateModel(&frame);
   }
-}
+} */
+
+//cv::Mat frame = imread("../Videos/sofa/input/in000001.jpg",  CV_LOAD_IMAGE_GRAYSCALE);
+//cv::Mat destination = frame.clone();
+
+//namedWindow("original", CV_WINDOW_AUTOSIZE);
+//namedWindow("blurred", CV_WINDOW_AUTOSIZE);
+
+//serialGaussianBlur(frame, destination, Size(7,7));
+//serialMedianBlur(frame, destination, 3);
+
+//imshow("original", frame);
+//cvWaitKey(1);
+//imshow("blurred", destination);
+//cvWaitKey(0);
+
+//cvDestroyWindow("original");
+//cvDestroyWindow("blurred");
+
+//run_serial();
+//run_tbb(num_threads);
+//get_speedup(num_threads); 
+
+//control();
 
 const char* nextImagePathForIndex(int i) 
 {

@@ -2,11 +2,14 @@
 #include "DualSGM.hpp"
 
 #define SHOW_IMAGES 0
-#define MOTION_COMP 1
-#define OPENCV_BLUR 1
+
+/* Pre processing */ 
 #define GAUSSIAN_SIZE 7 // Must be odd
 #define MEDIAN_SIZE 3 // Must be odd
 
+/* Motion Compensation */
+
+/* Core DSGM */
 #define AGE_THRESH 10
 #define MEAN_THRESH 9.0 //9.0
 #define THETA_D 5
@@ -17,11 +20,9 @@ DualSGM::DualSGM(Mat* first_image, int N) {
         // Set up windows
         namedWindow("origin", CV_WINDOW_AUTOSIZE);
         namedWindow("blurred", CV_WINDOW_AUTOSIZE);
+        namedWindow("homography", CV_WINDOW_AUTOSIZE);
         namedWindow("processing", CV_WINDOW_AUTOSIZE);
         namedWindow("result", CV_WINDOW_AUTOSIZE);
-        if (MOTION_COMP) {
-            namedWindow("homography", CV_WINDOW_AUTOSIZE);
-        }
     }
     
     prev_frame = first_image->clone();
@@ -51,49 +52,6 @@ DualSGM::DualSGM(Mat* first_image, int N) {
 
     //DualSGM::num_rows = first_image->rows;
     //DualSGM::num_cols = first_image->cols;
-}
-
-void DualSGM::serialUpdateModel(Mat *next_frame) {
-    Mat origin;
-    if (SHOW_IMAGES) {
-        origin = next_frame->clone(); 
-    }
-    /* Pre processing */
-    Mat destination;
-    Size gb_size = Size(GAUSSIAN_SIZE,GAUSSIAN_SIZE);
-    if (OPENCV_BLUR) {
-        GaussianBlur(*next_frame, destination, gb_size, 0, 0); 
-        medianBlur(destination, *next_frame, MEDIAN_SIZE);
-        cvWaitKey(1);
-    } else {
-        serialGaussianBlur(*next_frame, destination, gb_size);
-        serialMedianBlur(destination, *next_frame, MEDIAN_SIZE);
-    }
-
-    /* Motion Compensation */
-    if (MOTION_COMP) {
-        motionCompensation(next_frame);
-    }
-
-    /* Duel Gaussian Model */
-    core_dsgm_update(next_frame, bin_mat, 
-        app_u_mat, app_var_mat, 
-        can_u_mat, can_var_mat, 
-        app_ages, can_ages, 
-        0, next_frame->rows);
-    
-    if (SHOW_IMAGES) {
-        // Show update
-        imshow("origin", origin);
-        cvWaitKey(1);
-        imshow("blurred", *next_frame);
-        cvWaitKey(1);
-        imshow("processing", *app_u_mat);
-        cvWaitKey(1);
-        imshow("result", *bin_mat);
-        cvWaitKey(1);
-    }
-
 }
 
 void DualSGM::motionCompensation(Mat* next_frame)
@@ -216,16 +174,19 @@ class Dsgm_process : public cv::ParallelLoopBody
 
 };
 
-double DualSGM::tbbUpdateModel(Mat *next_frame, int num_threads) {
+void DualSGM::updateModel(Mat *next_frame, int num_threads, int use_opencv_blur, int do_motion_comp, Timing *run_times) 
+{
+    double start; 
     Mat origin;
     if (SHOW_IMAGES) {
         origin = next_frame->clone(); 
     }
 
+    start = timer();
     /* Pre processing */
-    Mat destination;
+    Mat destination = next_frame->clone();
     Size gb_size = Size(GAUSSIAN_SIZE,GAUSSIAN_SIZE);
-    if (OPENCV_BLUR) {
+    if (use_opencv_blur) {
         GaussianBlur(*next_frame, destination, gb_size, 0, 0); 
         medianBlur(destination, *next_frame, MEDIAN_SIZE);
         cvWaitKey(1);
@@ -233,17 +194,29 @@ double DualSGM::tbbUpdateModel(Mat *next_frame, int num_threads) {
         tbbGaussianBlur(*next_frame, destination, gb_size, num_threads);
         tbbMedianBlur(destination, *next_frame, MEDIAN_SIZE, num_threads);
     }
+    run_times->t_blur += timer() - start;
 
     /* Motion Compensation */
-    if (MOTION_COMP) {
+    if (do_motion_comp) {
+        start = timer();
         motionCompensation(next_frame);
+        run_times->t_mtnc += timer() - start;
     }
 
+
     /* Duel Gaussian Model */
-    double start_time = timer();
-    cv::parallel_for_(cv::Range(0,num_threads), Dsgm_process(next_frame, bin_mat, app_u_mat, 
-        app_var_mat, can_u_mat, can_var_mat, app_ages, can_ages, num_threads));
-    double end_time = timer();
+    start = timer();
+    if (num_threads == 0) {
+        core_dsgm_update(next_frame, bin_mat, 
+            app_u_mat, app_var_mat, 
+            can_u_mat, can_var_mat, 
+            app_ages, can_ages, 
+            0, next_frame->rows);
+    } else {
+        cv::parallel_for_(cv::Range(0,num_threads), Dsgm_process(next_frame, bin_mat, app_u_mat, 
+            app_var_mat, can_u_mat, can_var_mat, app_ages, can_ages, num_threads));
+    }
+    run_times->t_dsgm += timer() - start;
 
     if (SHOW_IMAGES) {
         // Show update
@@ -256,8 +229,6 @@ double DualSGM::tbbUpdateModel(Mat *next_frame, int num_threads) {
         imshow("result", *bin_mat);
         cvWaitKey(1);
     }
-
-    return end_time - start_time;
 }
 
 double DualSGM::timer(void)
@@ -281,6 +252,7 @@ DualSGM::~DualSGM() {
         cvDestroyWindow("origin");
         cvDestroyWindow("blurred");
         cvDestroyWindow("processing");
+        cvDestroyWindow("homography");
         cvDestroyWindow("result");
     }
 

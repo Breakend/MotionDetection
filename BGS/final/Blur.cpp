@@ -10,8 +10,6 @@ void serialMedianBlur(cv::Mat frame, cv::Mat destination, int size)
     namedWindow("MedianBlur", CV_WINDOW_AUTOSIZE);
   }
 
-  destination = frame.clone();
-
   // Filter width should be odd as we are calculating average blur 
   // for a pixel plus some offset in all directions
   assert(size % 2 == 1);
@@ -77,8 +75,6 @@ void serialGaussianBlur(cv::Mat frame, cv::Mat destination, cv::Size size)
     namedWindow("original", CV_WINDOW_AUTOSIZE);
     namedWindow("GaussianBlur", CV_WINDOW_AUTOSIZE);
   }
-
-  destination = frame.clone();
 
   // Filter width should be odd as we are calculating average blur for a pixel plus some offset in all directions
   assert(size.width % 2 == 1);
@@ -220,8 +216,6 @@ void tbbMedianBlur(cv::Mat frame, cv::Mat destination, int size, int num_threads
     namedWindow("MedianBlur", CV_WINDOW_AUTOSIZE);
   }
 
-  destination = frame.clone();
-
   // Filter width should be odd as we are calculating average blur 
   // for a pixel plus some offset in all directions
   assert(size % 2 == 1);
@@ -298,8 +292,6 @@ void tbbGaussianBlur(cv::Mat frame, cv::Mat destination, cv::Size size, int num_
     namedWindow("original", CV_WINDOW_AUTOSIZE);
     namedWindow("GaussianBlur", CV_WINDOW_AUTOSIZE);
   }
-
-  destination = frame.clone();
 
   // Filter width should be odd as we are calculating average blur for a pixel plus some offset in all directions
   assert(size.width % 2 == 1);
