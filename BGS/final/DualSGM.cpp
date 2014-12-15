@@ -1,7 +1,7 @@
 
 #include "DualSGM.hpp"
 
-#define SHOW_IMAGES 0
+#define SHOW_IMAGES 1
 
 /* Pre processing */ 
 #define GAUSSIAN_SIZE 7 // Must be odd
@@ -101,7 +101,7 @@ void DualSGM::motionCompensation(Mat* next_frame)
      
         //last_frame = cvCloneMat(next_frame);
 
-        double ransacThreshold = 3;
+        //double ransacThreshold = 3;
         // compute homography using RANSAC
         cv::Mat mask;
         vector <Point2f> prev_corner2, cur_corner2;
@@ -126,7 +126,7 @@ void DualSGM::motionCompensation(Mat* next_frame)
 
         cv::Mat next_temp = next_frame->clone();
         prev_frame = next_temp;
-        next_frame = &n;
+        n.assignTo(*next_frame); //next_frame = &n;
     } else {
         cv::Mat next_temp = next_frame->clone();
         prev_frame = next_temp;
@@ -182,8 +182,8 @@ void DualSGM::updateModel(Mat *next_frame, int num_threads, int use_opencv_blur,
         origin = next_frame->clone(); 
     }
 
-    start = timer();
     /* Pre processing */
+    start = timer();
     Mat destination = next_frame->clone();
     Size gb_size = Size(GAUSSIAN_SIZE,GAUSSIAN_SIZE);
     if (use_opencv_blur) {
@@ -191,8 +191,13 @@ void DualSGM::updateModel(Mat *next_frame, int num_threads, int use_opencv_blur,
         medianBlur(destination, *next_frame, MEDIAN_SIZE);
         cvWaitKey(1);
     } else {
-        tbbGaussianBlur(*next_frame, destination, gb_size, num_threads);
-        tbbMedianBlur(destination, *next_frame, MEDIAN_SIZE, num_threads);
+        if (num_threads == 0) {
+            serialGaussianBlur(*next_frame, destination, gb_size);
+            serialMedianBlur(destination, *next_frame, MEDIAN_SIZE);
+        } else {
+            tbbGaussianBlur(*next_frame, destination, gb_size, num_threads);
+            tbbMedianBlur(destination, *next_frame, MEDIAN_SIZE, num_threads);
+        }
     }
     run_times->t_blur += timer() - start;
 
@@ -202,7 +207,6 @@ void DualSGM::updateModel(Mat *next_frame, int num_threads, int use_opencv_blur,
         motionCompensation(next_frame);
         run_times->t_mtnc += timer() - start;
     }
-
 
     /* Duel Gaussian Model */
     start = timer();

@@ -13,6 +13,8 @@ const char* PATH = "../Videos/sofa/input/";
 const int start = 01;
 const int end = 500;
 
+void generate_speedup(int num_threads, int use_opencv_blur, int do_motion_comp);
+void generate_histogram(int num_threads, int use_opencv_blur, int do_motion_comp);
 void run_test(int num_threads, int use_opencv_blur, int do_motion_comp, DualSGM::Timing *run_times);
 const char* nextImagePathForIndex(int i);
 double timer(void);
@@ -28,6 +30,40 @@ int main(int argc, char *argv[])
   int use_opencv_blur = atoi(argv[2]);
   int do_motion_comp = atoi(argv[3]);
 
+  //generate_histogram(num_threads, use_opencv_blur, do_motion_comp);
+
+  generate_speedup(num_threads, use_opencv_blur, do_motion_comp);
+
+  return 0;
+}
+
+void generate_speedup(int num_threads, int use_opencv_blur, int do_motion_comp) 
+{
+  /*DualSGM::Timing ser_times;
+  ser_times.t_exec = 0;
+  ser_times.t_blur = 0;
+  ser_times.t_mtnc = 0;
+  ser_times.t_dsgm = 0;
+  ser_times.t_serl = 0;*/
+
+  DualSGM::Timing par_times;
+  par_times.t_exec = 0;
+  par_times.t_blur = 0;
+  par_times.t_mtnc = 0;
+  par_times.t_dsgm = 0;
+  par_times.t_serl = 0;
+
+  //run_test(0, use_opencv_blur, do_motion_comp, &ser_times);
+  run_test(num_threads, use_opencv_blur, do_motion_comp, &par_times);
+
+  //printf("num_threads ser_exec par_exec speedup\n");
+  printf("%i %f\n", num_threads, par_times.t_exec);
+  //printf("%f %f %f\n",ser_times.t_exec, par_times.t_exec, (ser_times.t_exec / par_times.t_exec));
+
+}
+
+void generate_histogram(int num_threads, int use_opencv_blur, int do_motion_comp) 
+{
   DualSGM::Timing run_times;
   run_times.t_exec = 0;
   run_times.t_blur = 0;
@@ -39,11 +75,9 @@ int main(int argc, char *argv[])
 
   run_times.t_serl = run_times.t_exec - run_times.t_blur - run_times.t_mtnc - run_times.t_dsgm;
 
-  printf("num_threads t_exec t_blur t_mtnc t_dsgm t_serl\n");
+  //printf("num_threads t_exec t_blur t_mtnc t_dsgm t_serl\n");
   printf("%i %f %f %f %f %f\n", num_threads, 
     run_times.t_exec, run_times.t_blur, run_times.t_mtnc, run_times.t_dsgm, run_times.t_serl);
-
-  return 0;
 }
 
 void run_test(int num_threads, int use_opencv_blur, int do_motion_comp, DualSGM::Timing *run_times)
