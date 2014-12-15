@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #define THREAD_SIZE 11
+#define SEPARATED_GAUSSIAN_FILTER 1
 
 __global__
 void gaussian_background_kernel(unsigned char * const d_frame,
@@ -302,6 +303,8 @@ void gaussian_and_median_blur(unsigned char* d_frame,
 
   const dim3 blockSize(THREAD_SIZE, THREAD_SIZE, 1);
   const dim3 gridSize(numRows / THREAD_SIZE + 1, numCols / THREAD_SIZE + 1, 1); 
+
+  #if SEPARATED_GAUSSIAN_FILTER == 1
   // once in the x direction
   gaussian_filter_kernel_separable<<<gridSize, blockSize>>>(d_frame, d_blurred, d_gfilter, 
                                                   d_filter_size, 
@@ -311,6 +314,12 @@ void gaussian_and_median_blur(unsigned char* d_frame,
   gaussian_filter_kernel_separable<<<gridSize, blockSize>>>(d_blurred, d_blurred_temp, d_gfilter, 
                                                   d_filter_size, 
                                                   numRows, numCols, false);
+  #else
+  // in this case, also need to make sure the filter is 2d
+  gaussian_filter_kernel<<<gridSize, blockSize>>>(d_frame, d_blurred_temp, d_gfilter, 
+                                                  d_filter_size, d_filter_size, 
+                                                  numRows, numCols);
+  #endif
 
   median_filter_kernel<<<gridSize, blockSize>>>(d_blurred_temp, d_blurred, numRows, numCols);
 
