@@ -11,6 +11,8 @@
 #include "filter.h"
 
 #define OPENCV_PROPROCESS 1
+#define SEPARABLE_GAUSSIAN_FILTER 1
+#define PREPROCESSING 1
 
 void gaussian_background(unsigned char * const d_frame,
                             unsigned char* const d_amean, 
@@ -202,65 +204,79 @@ void test_cuda(){
 
   const int BLUR_SIZE = 9;
   const float SIGMA = 5.f;
+
+  #if SEPARABLE_GAUSSIAN_FILTER == 1
   cv::Mat temp_kernel = cv::getGaussianKernel(BLUR_SIZE, SIGMA, CV_32F);
   gaussian_filter_vals = temp_kernel.ptr<float>(0);
+  #else
+  gaussian_filter_vals = create2DGaussianFilter(BLUR_SIZE);
+  #endif
 
   // gaussian_filter_vals = createGaussianFilter(BLUR_SIZE);
   //put it into memory once.
-  checkCudaErrors(cudaMalloc(&d_gaussian_filter, sizeof(float) * BLUR_SIZE * BLUR_SIZE));
-  checkCudaErrors(cudaMemcpy(d_gaussian_filter, gaussian_filter_vals, sizeof(float) * BLUR_SIZE * BLUR_SIZE, cudaMemcpyHostToDevice));
+  #if SEPARABLE_GAUSSIAN_FILTER == 1
+    checkCudaErrors(cudaMalloc(&d_gaussian_filter, sizeof(float) * BLUR_SIZE));
+    checkCudaErrors(cudaMemcpy(d_gaussian_filter, gaussian_filter_vals, sizeof(float) * BLUR_SIZE, cudaMemcpyHostToDevice));
+  #else
+    checkCudaErrors(cudaMalloc(&d_gaussian_filter, sizeof(float) * BLUR_SIZE * BLUR_SIZE));
+    checkCudaErrors(cudaMemcpy(d_gaussian_filter, gaussian_filter_vals, sizeof(float) * BLUR_SIZE * BLUR_SIZE, cudaMemcpyHostToDevice));
+  #endif
 
-
-  // for(int k=0;k<BLUR_SIZE;k++){
-  //   printf("%f ", gaussian_filter_vals[k]);
-  // }
   size_t numPixels;
 
   GpuTimer timer;
 
   while(i < 500){
 
-    #if OPENCV_PROPROCESS == 1 
-      cv::Mat dst, destination;
-      cv::GaussianBlur( frame, destination, cv::Size(9,9), 0, 0 );
-      cv::medianBlur ( destination, dst, 3 );
-      t_parallel_s = cpu_timer();
-      //load the image and give us our input and output pointers
-      preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
-              &d_bin, &d_amean, &d_avar, &d_aage, &d_cmean, &d_cvar, &d_cage);
-    #else
-      //our own GPU median and Gaussian blur
-      t_parallel_s = cpu_timer();
-
-      preprocessGaussianBlur(&frame, &d_frame_to_blur, &d_frame_blurred, &d_blurred_temp, BLUR_SIZE);
-      timer.Start();
-      gaussian_and_median_blur(d_frame_to_blur,
-                      d_frame_blurred,
-                      d_blurred_temp,
-                      d_gaussian_filter,
-                      BLUR_SIZE,
-                      numRows(), numCols());
-
-      timer.Stop();
-      cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
-
-      t_gpu += (timer.Elapsed()/1000);
-      size_t numPixels = numRows()*numCols();
-
-      checkCudaErrors(cudaMemcpy(blurred_frame, d_frame_blurred, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
-
-      cv::Mat dst(cv::Size(numCols(), numRows()),CV_8UC1,blurred_frame);
-
-      cleanup_blur();
-
-      t_parallel_f = cpu_timer();
-      t_parallel += t_parallel_f - t_parallel_s;
-
-      t_parallel_s = cpu_timer();
-      //load the image and give us our input and output pointers
-      preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
+    #if PREPROCESSING == 1
+      #if OPENCV_PROPROCESS == 1 
+        cv::Mat dst, destination;
+        cv::GaussianBlur( frame, destination, cv::Size(9,9), 0, 0 );
+        cv::medianBlur ( destination, dst, 3 );
+        t_parallel_s = cpu_timer();
+        //load the image and give us our input and output pointers
+        preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
                 &d_bin, &d_amean, &d_avar, &d_aage, &d_cmean, &d_cvar, &d_cage);
+      #else
+        //our own GPU median and Gaussian blur
+        t_parallel_s = cpu_timer();
 
+        preprocessGaussianBlur(&frame, &d_frame_to_blur, &d_frame_blurred, &d_blurred_temp, BLUR_SIZE);
+        timer.Start();
+        gaussian_and_median_blur(d_frame_to_blur,
+                        d_frame_blurred,
+                        d_blurred_temp,
+                        d_gaussian_filter,
+                        BLUR_SIZE,
+                        numRows(), numCols());
+
+        timer.Stop();
+        cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
+
+        t_gpu += (timer.Elapsed()/1000);
+        size_t numPixels = numRows()*numCols();
+
+        checkCudaErrors(cudaMemcpy(blurred_frame, d_frame_blurred, sizeof(unsigned char) * numPixels, cudaMemcpyDeviceToHost));
+
+        cv::Mat dst(cv::Size(numCols(), numRows()),CV_8UC1,blurred_frame);
+
+        cleanup_blur();
+
+        t_parallel_f = cpu_timer();
+        t_parallel += t_parallel_f - t_parallel_s;
+
+        t_parallel_s = cpu_timer();
+        //load the image and give us our input and output pointers
+        preProcess(&dst, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
+                  &d_bin, &d_amean, &d_avar, &d_aage, &d_cmean, &d_cvar, &d_cage);
+
+      #endif
+    #else
+      //no filtering
+      t_parallel_s = cpu_timer();
+      //load the image and give us our input and output pointers
+      preProcess(&frame, &binary, &a_mean,  &a_variance, &a_age, &c_mean, &c_variance, &c_age, &d_frame, 
+                  &d_bin, &d_amean, &d_avar, &d_aage, &d_cmean, &d_cvar, &d_cage);
     #endif
     /*
      See how much time is actually spent in the GPU
@@ -287,7 +303,7 @@ void test_cuda(){
 
     t_parallel += t_parallel_f - t_parallel_s;
     cv::Mat temp = cv::Mat(numRows(), numCols(), CV_8UC1, binary);
-    cv::imshow("origin", temp);
+    cv::imshow("origin", dst);
     cvWaitKey(1);
 
     cleanup();

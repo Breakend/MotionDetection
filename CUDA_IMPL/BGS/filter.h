@@ -1,6 +1,6 @@
 #ifndef FILTER_H__
 #define FILTER_H__
 
-float * createGaussianFilter(int N);
+float * create2DGaussianFilter(int N);
 
 #endif
