@@ -10,13 +10,14 @@
 
 using namespace cv;
 
+/* Median blur */
+void tbbMedianBlur(cv::Mat frame, cv::Mat destination, int size, int num_threads);
 void serialMedianBlur(cv::Mat frame, cv::Mat destination, int size);
 void insertionSort(int *window, int length);
 
+/* Gaussian blur */
+void tbbGaussianBlur(cv::Mat frame, cv::Mat destination, cv::Size size, int num_threads);
 void serialGaussianBlur(cv::Mat frame, cv::Mat destination, cv::Size size);
 void createGaussianFilter(float *gaussian_filter, int width);
-
-void tbbMedianBlur(cv::Mat frame, cv::Mat destination, int size, int num_threads);
-void tbbGaussianBlur(cv::Mat frame, cv::Mat destination, cv::Size size, int num_threads);
 
 #endif /* defined(__Blur__) */

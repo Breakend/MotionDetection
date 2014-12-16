@@ -1,6 +1,7 @@
 
 #include "DualSGM.hpp"
 
+/* Display debug images */
 #define SHOW_IMAGES 1
 
 /* Pre processing */ 
@@ -15,6 +16,10 @@
 #define THETA_D 5
 #define VAR_INIT 255 // max unsigned char
 
+/**
+ *  Constructor for a DualSGM.
+ *  Requires the first image of the test set
+ */
 DualSGM::DualSGM(Mat* first_image, int N) {
     if (SHOW_IMAGES) {
         // Set up windows
@@ -54,6 +59,10 @@ DualSGM::DualSGM(Mat* first_image, int N) {
     //DualSGM::num_cols = first_image->cols;
 }
 
+/**
+ *  Run motion compensation for a frame, the frame itself is altered
+ *  Implemented using OpenCV functions
+ */
 void DualSGM::motionCompensation(Mat* next_frame)
 {
     cv::Mat n;
@@ -98,11 +107,7 @@ void DualSGM::motionCompensation(Mat* next_frame)
     if(m_prevPts.size() >= 1) {
         
         cv::calcOpticalFlowPyrLK(m_prevImg, m_nextImg, m_prevPts, m_nextPts, m_status, m_error, Size(20,20), 5);
-     
-        //last_frame = cvCloneMat(next_frame);
 
-        //double ransacThreshold = 3;
-        // compute homography using RANSAC
         cv::Mat mask;
         vector <Point2f> prev_corner2, cur_corner2;
         n = next_frame->clone();
@@ -134,6 +139,9 @@ void DualSGM::motionCompensation(Mat* next_frame)
     }
 }
 
+/**
+ *  A TBB task for the DSGM
+ */
 class Dsgm_process : public cv::ParallelLoopBody 
 {
     private:
@@ -174,6 +182,10 @@ class Dsgm_process : public cv::ParallelLoopBody
 
 };
 
+/**
+ *  Update model based on next frame and number of tasks, blurring algorithm, motion compesation.
+ *  A Timing struct is completed by this function
+ */
 void DualSGM::updateModel(Mat *next_frame, int num_threads, int use_opencv_blur, int do_motion_comp, Timing *run_times) 
 {
     double start; 
@@ -235,6 +247,9 @@ void DualSGM::updateModel(Mat *next_frame, int num_threads, int use_opencv_blur,
     }
 }
 
+/**
+ *  Returns the time of day in seconds as a double
+ */
 double DualSGM::timer(void)
 {
     struct timeval tv;
@@ -242,6 +257,9 @@ double DualSGM::timer(void)
     return tv.tv_sec + (((double) tv.tv_usec)/1e6);
 }
 
+/**
+ *  Destructor method
+ */
 DualSGM::~DualSGM() {
     //delete prev_frame;
     delete bin_mat;
@@ -262,6 +280,19 @@ DualSGM::~DualSGM() {
 
 }
 
+/**
+ *  Core DSGM update function
+ *      next_frame      Next input frame matrix, preprocessed and possibly motion compensated
+ *      bin_mat         Output matrix 
+ *      app_u_mat       Apparent mean matrix
+ *      app_var_mat     Apparent variance matrix
+ *      can_u_mat       Candidate mean matrix
+ *      can_var_mat     Candidate variance matrix
+ *      app_ages        Apparent ages matrix
+ *      can_ages        Candidate ages matrix
+ *      offset          Row offset
+ *      row_lim         Row limit
+ */
 inline void core_dsgm_update(cv::Mat *next_frame, cv::Mat *bin_mat, 
     cv::Mat *app_u_mat, cv::Mat *app_var_mat, 
     cv::Mat *can_u_mat, cv::Mat *can_var_mat, 
@@ -322,9 +353,7 @@ inline void core_dsgm_update(cv::Mat *next_frame, cv::Mat *bin_mat,
                 }
 
             } else {
-                //can_ages[x][y] = 1;
-                //candidateBackgroundModel->setPixel(next_frame, y, x);
-                
+                //candidateBackgroundModel->setPixel(next_frame, y, x);                
                 can_u_mat->at<uchar>(y, x) = i_sclr.val[0];
                 can_var_mat->at<uchar>(y, x) = VAR_INIT;
                 can_ages[x][y] = 1;
@@ -342,11 +371,8 @@ inline void core_dsgm_update(cv::Mat *next_frame, cv::Mat *bin_mat,
                 can_ages[x][y] = 1;
             }
             
-
             cv::Scalar app_diff = app_u_mat->at<uchar>(y,x) - next_frame->at<uchar>(y,x);
-            //cv::Scalar pixel_var = frame_var_mat->at<uchar>(y, x);
 
-            //this should be related to theta_d and variance theta_d * i_sclr.val[0] //pixel_var.val[0]
             if (pow(app_diff.val[0], 2) <= THETA_D*max(0.25, i_sclr.val[0])) { // 60
                 //background
                 bin_mat->at<uchar>(y, x) = 0;

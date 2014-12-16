@@ -21,18 +21,17 @@ class DualSGM {
         static int num_rows;
         static int num_cols;
 
+        /* Timing information struct */
         typedef struct
         {
-            double t_exec;
-            double t_blur;
-            double t_mtnc;
-            double t_dsgm;
-            double t_serl;
+            double t_exec; // Total execution time
+            double t_blur; // Time spent doing preprocessing
+            double t_mtnc; // Time spent doing motion compensation
+            double t_dsgm; // Time spent in core DSGM update
+            double t_serl; // Remainder
         } Timing;
 
         void updateModel(Mat *next_frame, int num_threads, int use_opencv_blur, int do_motion_comp, Timing *run_times);
-        //void serialUpdateModel(Mat* next_frame);
-        //double tbbUpdateModel(Mat *next_frame, int num_threads);
 
     private:
         void motionCompensation(Mat* next_frame);
@@ -53,7 +52,5 @@ inline void core_dsgm_update(cv::Mat *next_frame, cv::Mat *bin_mat,
     cv::Mat *can_u_mat, cv::Mat *can_var_mat, 
     int **app_ages, int **can_ages, 
     int offset, int row_lim); 
-
-
 
 #endif /* defined(__DualSGM__) */

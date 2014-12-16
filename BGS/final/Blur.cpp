@@ -1,8 +1,12 @@
 
 #include "Blur.hpp"
 
+/* Display debug images */
 #define SHOW_BLUR_IMAGES 0
 
+/**
+ *  Implemented serial median blur
+ */
 void serialMedianBlur(cv::Mat frame, cv::Mat destination, int size)
 {
   if (SHOW_BLUR_IMAGES) {
@@ -55,8 +59,9 @@ void serialMedianBlur(cv::Mat frame, cv::Mat destination, int size)
   }
 } 
 
-//sort the window using insertion sort
-//insertion sort is best for this sorting
+/**
+ *  Insertion sorting algorithm
+ */
 void insertionSort(int *window, int length)
 {
   int temp, i , j;
@@ -69,6 +74,9 @@ void insertionSort(int *window, int length)
   }
 }
 
+/**
+ *  Implemented serial Gaussian blur
+ */
 void serialGaussianBlur(cv::Mat frame, cv::Mat destination, cv::Size size)
 {
   if (SHOW_BLUR_IMAGES) {
@@ -122,16 +130,15 @@ void serialGaussianBlur(cv::Mat frame, cv::Mat destination, cv::Size size)
   }
 } 
 
-// Creates gaussian filter based on G(x,y) formula: http://en.wikipedia.org/wiki/Gaussian_blur.
+/**
+ *  Create the gaussian filter matrix
+ */
 void createGaussianFilter(float *gaussian_filter, int width)
 {
     const float sigma   = 2.f;              // Standard deviation of the Gaussian distribution.
     const int   half    = width / 2;
     float       sum     = 0.f;
-  
-    // Create convolution matrix
-    //m_filter.weight.resize(width * width);
- 
+
     // Calculate filter sum first
     for (int r = -half; r <= half; ++r) {
         for (int c = -half; c <= half; ++c) {
@@ -155,6 +162,9 @@ void createGaussianFilter(float *gaussian_filter, int width)
     }
 }
 
+/**
+ *  A parallel task for median blur
+ */
 class Median_blur_process : public cv::ParallelLoopBody 
 {
     private:
@@ -209,6 +219,9 @@ class Median_blur_process : public cv::ParallelLoopBody
         }
 };
 
+/**
+ *  Implemented parallel median blur
+ */
 void tbbMedianBlur(cv::Mat frame, cv::Mat destination, int size, int num_threads)
 {
   if (SHOW_BLUR_IMAGES) {
@@ -230,6 +243,9 @@ void tbbMedianBlur(cv::Mat frame, cv::Mat destination, int size, int num_threads
   }
 }
 
+/**
+ *  A parallel task for Gaussian blur
+ */
 class Gaussian_blur_process : public cv::ParallelLoopBody 
 {
     private:
@@ -286,6 +302,9 @@ class Gaussian_blur_process : public cv::ParallelLoopBody
 
 };
 
+/**
+ *  Implemented parallel Gaussian blur
+ */
 void tbbGaussianBlur(cv::Mat frame, cv::Mat destination, cv::Size size, int num_threads)
 {
   if (SHOW_BLUR_IMAGES) {
