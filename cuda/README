@@ -1,0 +1,16 @@
+To build and run. Make sure you have CUDA and OPEN_CV and CMAKE installed. You can probably get away with not having CMAKE if you're running Mac OS X 10.9 with installation paths through HomeBrew. However, if not.
+
+mkdir build
+cd build
+cmake ..
+make clean
+make
+../bin/BGS
+
+if it doesn't work may need to export paths or add opencv and nvcc to your search paths
+
+export OpenCV_DIR=/usr/local/Cellar/opencv/2.4.6.1/
+
+Make sure you have the appropriate image sequences and then update the paths in the main.cpp file
+
+NOTE: we've included the binary file, but you will have to rebuild likely using cmake as per the instructions above
